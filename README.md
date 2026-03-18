@@ -99,6 +99,14 @@ EvenWorkout is designed for hands-free gym use. Every screen has a dedicated gla
 
 ---
 
+## Try It on G2
+
+Scan the QR code with the Even Hub app to load EvenWorkout on your G2 glasses.
+
+<img src="docs/images/qrcode.png" alt="EvenWorkout QR Code" width="200" />
+
+---
+
 ## Tech Stack
 
 - **React 19** + **TypeScript** + **React Router 7**
