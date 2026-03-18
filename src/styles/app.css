@@ -1,0 +1,46 @@
+@import "tailwindcss";
+@source "../../src";
+
+@theme {
+  --color-cyan-accent: #00bcd4;
+  --color-cyan-accent-dark: #0097a7;
+  --color-orange-accent: #ff9800;
+  --color-orange-accent-dark: #f57c00;
+  --color-surface: #1a1a2e;
+  --color-surface-light: #232340;
+  --color-surface-lighter: #2d2d50;
+  --color-bg: #0f0f1a;
+  --color-text-primary: #f0f0f5;
+  --color-text-secondary: #9e9eb8;
+  --color-text-muted: #6b6b80;
+  --color-difficulty-beginner: #4caf50;
+  --color-difficulty-intermediate: #ffc107;
+  --color-difficulty-advanced: #f44336;
+}
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+
+/* Light color for number input spinners */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  filter: invert(0.7);
+}
