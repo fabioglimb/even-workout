@@ -62,7 +62,7 @@ export default function ActiveWorkout() {
   };
 
   return (
-    <AppShell header={<><NavHeader title={workout.title} left={<Button variant="ghost" size="icon" onClick={handleQuit}><IcChevronBack width={20} height={20} /></Button>} right={<span className="text-[11px] tracking-[-0.11px] text-text-dim tabular-nums">{completedSets}/{totalSets} sets</span>} /><div className="px-3 pb-2"><Progress value={progress * 100} /></div></>}>
+    <AppShell header={<><NavHeader title={workout.title} left={<Button variant="ghost" size="icon" onClick={handleQuit}><IcChevronBack width={20} height={20} /></Button>} right={<span className="text-[11px] tracking-[-0.11px] text-text-dim tabular-nums">{completedSets}/{totalSets} sets</span>} /><div className="px-3 mt-3 pb-2"><Progress value={progress * 100} /></div></>}>
       <div className="px-3 pt-6 pb-8 flex flex-col items-center gap-6">
 
         {isResting ? (
