@@ -5,8 +5,8 @@ import { useRestTimer } from "../hooks/useRestTimer";
 import { useWorkoutProgress } from "../hooks/useWorkoutProgress";
 import { useWorkoutActions } from "../hooks/useWorkoutActions";
 import { getWorkoutById } from "../data/workouts";
-import { Button } from "../components/ui/Button";
-import { Progress } from "../components/ui/Progress";
+import { Button, Progress, NavHeader, AppShell } from "even-toolkit/web";
+import { IcChevronBack } from "even-toolkit/web/icons/svg-icons";
 import { ExerciseCard } from "../components/shared/ExerciseCard";
 import { RestTimer } from "../components/shared/RestTimer";
 import { ExercisePreview } from "../components/shared/ExercisePreview";
@@ -62,53 +62,38 @@ export default function ActiveWorkout() {
   };
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-8">
-      <button
-        onClick={handleQuit}
-        className="text-sm text-text-muted uppercase tracking-wider mb-6 hover:text-text-secondary transition-colors"
-      >
-        &larr; Quit
-      </button>
+    <AppShell header={<><NavHeader title={workout.title} left={<Button variant="ghost" size="icon" onClick={handleQuit}><IcChevronBack width={20} height={20} /></Button>} right={<span className="text-[11px] tracking-[-0.11px] text-text-dim tabular-nums">{completedSets}/{totalSets} sets</span>} /><div className="px-3 pb-2"><Progress value={progress * 100} /></div></>}>
+      <div className="px-3 pt-6 pb-8 flex flex-col items-center gap-6">
 
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-lg font-bold text-text-primary uppercase tracking-wider">
-          {workout.title}
-        </h1>
-        <span className="text-xs text-text-muted tabular-nums">
-          {completedSets}/{totalSets} sets
-        </span>
+        {isResting ? (
+          <div className="flex flex-col items-center gap-6 w-full">
+            <RestTimer remaining={restRemaining} total={currentExercise.restSeconds} onSkip={skipRest} />
+            <Button size="lg" className="w-full" onClick={skipRest}>
+              Skip Rest
+            </Button>
+          </div>
+        ) : isWorkoutDone ? (
+          <div className="flex flex-col items-center gap-6 w-full text-center">
+            <div>
+              <p className="text-[17px] tracking-[-0.17px] text-text-dim mb-2">All Sets Complete</p>
+              <h2 className="text-[24px] tracking-[-0.72px] text-text">Great Work!</h2>
+            </div>
+            <Button size="lg" className="w-full" onClick={handleFinish}>
+              Finish Workout
+            </Button>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center gap-6 w-full">
+            <ExerciseCard exercise={currentExercise} currentSet={currentSet} />
+            <Button size="lg" className="w-full" onClick={completeSet}>
+              Complete Set
+            </Button>
+            {nextExercise && (
+              <ExercisePreview exercise={nextExercise} />
+            )}
+          </div>
+        )}
       </div>
-
-      <Progress value={progress} color={isResting ? "orange" : "cyan"} className="mb-8" />
-
-      {isResting ? (
-        <RestTimer remaining={restRemaining} onSkip={skipRest} />
-      ) : isWorkoutDone ? (
-        <div className="text-center py-12">
-          <p className="text-xs uppercase tracking-widest text-cyan-accent mb-4">
-            All Sets Complete
-          </p>
-          <h2 className="text-3xl font-bold text-text-primary mb-8">
-            Great Work!
-          </h2>
-          <Button size="xl" onClick={handleFinish}>
-            Finish Workout
-          </Button>
-        </div>
-      ) : (
-        <div className="flex flex-col gap-6">
-          <ExerciseCard exercise={currentExercise} currentSet={currentSet} />
-          <Button size="xl" className="w-full" onClick={completeSet}>
-            Complete Set
-          </Button>
-        </div>
-      )}
-
-      {!isWorkoutDone && nextExercise && !isResting && (
-        <div className="mt-6">
-          <ExercisePreview exercise={nextExercise} />
-        </div>
-      )}
-    </div>
+    </AppShell>
   );
 }

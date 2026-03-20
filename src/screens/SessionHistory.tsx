@@ -1,12 +1,13 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { useWorkoutContext } from "../contexts/WorkoutContext";
-import { Card } from "../components/ui/Card";
-import { Badge } from "../components/ui/Badge";
+import { Card, Badge, NavHeader, Button, AppShell, EmptyState, ListItem, ConfirmDialog } from "even-toolkit/web";
+import { IcChevronBack, IcTrash } from "even-toolkit/web/icons/svg-icons";
 
 export default function SessionHistory() {
   const navigate = useNavigate();
   const { sessionHistory, removeSession, clearHistory } = useWorkoutContext();
+  const [confirmClear, setConfirmClear] = useState(false);
 
   const thisWeekCount = useMemo(() => {
     const now = new Date();
@@ -34,82 +35,62 @@ export default function SessionHistory() {
   };
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-8">
-      <button
-        onClick={() => navigate("/")}
-        className="text-sm text-text-muted uppercase tracking-wider mb-6 hover:text-text-secondary transition-colors"
-      >
-        &larr; Back
-      </button>
+    <AppShell
+      header={
+        <NavHeader
+          title="Session History"
+          left={
+            <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
+              <IcChevronBack width={20} height={20} />
+            </Button>
+          }
+          right={sessionHistory.length > 0 ? (
+            <Button variant="ghost" size="icon" onClick={() => setConfirmClear(true)}>
+              <IcTrash width={20} height={20} />
+            </Button>
+          ) : undefined}
+        />
+      }
+    >
+      <div className="px-3 pt-4 pb-8">
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          <Card variant="elevated" className="text-center">
+            <p className="text-[11px] tracking-[-0.11px] text-text-dim mb-1">Total Workouts</p>
+            <p className="text-[20px] tracking-[-0.6px] text-accent tabular-nums">{sessionHistory.length}</p>
+          </Card>
+          <Card variant="elevated" className="text-center">
+            <p className="text-[11px] tracking-[-0.11px] text-text-dim mb-1">This Week</p>
+            <p className="text-[20px] tracking-[-0.6px] text-accent tabular-nums">{thisWeekCount}</p>
+          </Card>
+        </div>
 
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-text-primary">
-          Session History
-        </h1>
-        {sessionHistory.length > 0 && (
-          <button
-            onClick={clearHistory}
-            className="px-2 py-1 text-[10px] uppercase tracking-wider text-red-400 hover:text-red-300 bg-surface-light rounded-sm border border-surface-lighter"
-          >
-            Clear All
-          </button>
+        {sessionHistory.length === 0 ? (
+          <EmptyState title="No sessions yet" description="Complete a workout to see it here." />
+        ) : (
+          <div className="flex flex-col gap-3">
+            {sessionHistory.map((session) => (
+              <div key={session.id} className="rounded-[6px] overflow-hidden">
+                <ListItem
+                  title={session.workoutTitle}
+                  subtitle={`${formatSessionDuration(session.durationSeconds)}  ·  ${session.setsCompleted}/${session.totalSets} sets  ·  ${session.exercisesCompleted}/${session.totalExercises} exercises`}
+                  onDelete={() => removeSession(session.id)}
+                  trailing={<Badge>{formatDate(session.completedAt)}</Badge>}
+                />
+              </div>
+            ))}
+          </div>
         )}
       </div>
-
-      <div className="grid grid-cols-2 gap-4 mb-8">
-        <Card variant="elevated" padding="md" className="text-center">
-          <p className="text-xs uppercase tracking-widest text-text-muted mb-1">
-            Total Workouts
-          </p>
-          <p className="text-2xl font-bold text-cyan-accent tabular-nums">
-            {sessionHistory.length}
-          </p>
-        </Card>
-        <Card variant="elevated" padding="md" className="text-center">
-          <p className="text-xs uppercase tracking-widest text-text-muted mb-1">
-            This Week
-          </p>
-          <p className="text-2xl font-bold text-cyan-accent tabular-nums">
-            {thisWeekCount}
-          </p>
-        </Card>
-      </div>
-
-      {sessionHistory.length === 0 ? (
-        <p className="text-sm text-text-muted text-center py-8">
-          No sessions yet. Complete a workout to see it here.
-        </p>
-      ) : (
-        <div className="flex flex-col gap-3">
-          {sessionHistory.map((session) => (
-            <Card key={session.id} padding="md">
-              <div className="flex items-start justify-between mb-2">
-                <h3 className="text-sm font-bold text-text-primary">
-                  {session.workoutTitle}
-                </h3>
-                <div className="flex items-center gap-2">
-                  <Badge variant="default">{formatDate(session.completedAt)}</Badge>
-                  <button
-                    onClick={() => removeSession(session.id)}
-                    className="px-2 py-1 text-[10px] uppercase tracking-wider text-red-400 hover:text-red-300 bg-surface-light rounded-sm border border-surface-lighter"
-                  >
-                    Del
-                  </button>
-                </div>
-              </div>
-              <div className="flex items-center gap-4 text-xs text-text-muted">
-                <span>{formatSessionDuration(session.durationSeconds)}</span>
-                <span>
-                  {session.setsCompleted}/{session.totalSets} sets
-                </span>
-                <span>
-                  {session.exercisesCompleted}/{session.totalExercises} exercises
-                </span>
-              </div>
-            </Card>
-          ))}
-        </div>
-      )}
-    </div>
+      <ConfirmDialog
+        open={confirmClear}
+        onClose={() => setConfirmClear(false)}
+        onConfirm={clearHistory}
+        title="Clear All History?"
+        description="This will permanently delete all workout sessions. This action cannot be undone."
+        confirmLabel="Clear All"
+        cancelLabel="Cancel"
+        variant="danger"
+      />
+    </AppShell>
   );
 }

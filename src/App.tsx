@@ -13,7 +13,7 @@ export default function App() {
     <BrowserRouter>
       <WorkoutProvider>
         <WorkoutGlasses />
-        <div className="min-h-screen bg-bg">
+        <div className="min-h-screen">
           <Routes>
             <Route path="/" element={<WorkoutList />} />
             <Route path="/workout/:id" element={<WorkoutDetail />} />

@@ -1,8 +1,9 @@
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router";
 import { getWorkoutById, getTotalSets } from "../data/workouts";
 import { useWorkoutContext } from "../contexts/WorkoutContext";
-import { Card } from "../components/ui/Card";
-import { Button } from "../components/ui/Button";
+import { Card, Button, Badge, NavHeader, AppShell, EmptyState, ConfirmDialog, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "even-toolkit/web";
+import { IcChevronBack } from "even-toolkit/web/icons/svg-icons";
 import { DifficultyBadge } from "../components/shared/DifficultyBadge";
 import { formatDuration } from "../utils/format";
 
@@ -10,17 +11,15 @@ export default function WorkoutDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { startWorkout, allWorkouts, removeWorkout } = useWorkoutContext();
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const workout = id ? getWorkoutById(id, allWorkouts) : undefined;
 
   if (!workout) {
     return (
-      <div className="max-w-lg mx-auto px-4 py-8 text-center">
-        <p className="text-text-secondary">Workout not found.</p>
-        <Button variant="ghost" className="mt-4" onClick={() => navigate("/")}>
-          Back
-        </Button>
-      </div>
+      <AppShell header={<NavHeader title="Workout" left={<Button variant="ghost" size="icon" onClick={() => navigate("/")}><IcChevronBack width={20} height={20} /></Button>} />}>
+        <EmptyState title="Workout not found" />
+      </AppShell>
     );
   }
 
@@ -29,89 +28,69 @@ export default function WorkoutDetail() {
     navigate(`/workout/${workout.id}/active`);
   };
 
+  const totalReps = workout.exercises.reduce((sum, ex) => sum + (ex.reps ?? 0) * ex.sets, 0);
+
   return (
-    <div className="max-w-lg mx-auto px-4 py-8">
-      <button
-        onClick={() => navigate("/")}
-        className="text-sm text-text-muted uppercase tracking-wider mb-6 hover:text-text-secondary transition-colors"
-      >
-        &larr; Back
-      </button>
-
-      <div className="mb-6">
-        <div className="flex items-start justify-between mb-2">
-          <h1 className="text-2xl font-bold text-text-primary">
-            {workout.title}
-          </h1>
+    <AppShell header={<NavHeader title={workout.title} left={<Button variant="ghost" size="icon" onClick={() => navigate("/")}><IcChevronBack width={20} height={20} /></Button>} />}>
+      <div className="px-3 pb-8">
+        {/* Stats badges */}
+        <div className="flex flex-wrap items-center gap-2 mt-3 mb-4">
           <DifficultyBadge difficulty={workout.difficulty} />
+          <Badge variant="accent">{formatDuration(workout.estimatedMinutes)}</Badge>
+          <Badge>{workout.exercises.length} exercises</Badge>
+          <Badge>{getTotalSets(workout)} sets</Badge>
+          {totalReps > 0 && <Badge>{totalReps} reps</Badge>}
         </div>
-        <p className="text-sm text-text-secondary uppercase tracking-wider">
-          {workout.target}
-        </p>
-        <div className="flex gap-4 mt-2 text-xs text-text-muted">
-          <span>{formatDuration(workout.estimatedMinutes)}</span>
-          <span>{workout.exercises.length} exercises</span>
-          <span>{getTotalSets(workout)} total sets</span>
+
+        {/* Exercise table */}
+        <Card padding="none" className="mb-6 overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Exercise</TableHead>
+                <TableHead className="text-center">Sets</TableHead>
+                <TableHead className="text-center">Reps/Dur</TableHead>
+                <TableHead className="text-center">Rest</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {workout.exercises.map((ex, i) => (
+                <TableRow key={i}>
+                  <TableCell className="text-text">{ex.name}</TableCell>
+                  <TableCell className="text-center text-text-dim">{ex.sets}</TableCell>
+                  <TableCell className="text-center text-text-dim tabular-nums">
+                    {ex.reps !== null ? `${ex.reps}` : `${ex.durationSeconds}s`}
+                  </TableCell>
+                  <TableCell className="text-center text-text-dim tabular-nums">{ex.restSeconds}s</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
+
+        <Button size="lg" className="w-full" onClick={handleStart}>
+          Start Workout
+        </Button>
+
+        <div className="flex gap-2 mt-4">
+          <Button variant="default" className="flex-1" onClick={() => navigate(`/editor/${workout.id}`)}>
+            Edit
+          </Button>
+          <Button variant="danger" className="flex-1" onClick={() => setConfirmDelete(true)}>
+            Delete
+          </Button>
         </div>
       </div>
-
-      <Card padding="none" className="mb-6 overflow-hidden">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-surface-lighter text-left text-xs text-text-muted uppercase tracking-wider">
-              <th className="px-4 py-3">Exercise</th>
-              <th className="px-4 py-3 text-center">Sets</th>
-              <th className="px-4 py-3 text-center">Reps/Dur</th>
-              <th className="px-4 py-3 text-center">Rest</th>
-            </tr>
-          </thead>
-          <tbody>
-            {workout.exercises.map((ex, i) => (
-              <tr
-                key={i}
-                className="border-b border-surface-lighter last:border-0"
-              >
-                <td className="px-4 py-3 font-medium text-text-primary">
-                  {ex.name}
-                </td>
-                <td className="px-4 py-3 text-center text-text-secondary">
-                  {ex.sets}
-                </td>
-                <td className="px-4 py-3 text-center text-text-secondary tabular-nums">
-                  {ex.reps !== null ? `${ex.reps}` : `${ex.durationSeconds}s`}
-                </td>
-                <td className="px-4 py-3 text-center text-text-secondary tabular-nums">
-                  {ex.restSeconds}s
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </Card>
-
-      <Button size="xl" className="w-full" onClick={handleStart}>
-        Start Workout
-      </Button>
-
-      <div className="flex gap-2 mt-4">
-        <Button
-          variant="secondary"
-          className="flex-1"
-          onClick={() => navigate(`/editor/${workout.id}`)}
-        >
-          Edit
-        </Button>
-        <Button
-          variant="secondary"
-          className="flex-1 text-red-400 hover:text-red-300"
-          onClick={() => {
-            removeWorkout(workout.id);
-            navigate("/");
-          }}
-        >
-          Delete
-        </Button>
-      </div>
-    </div>
+      <ConfirmDialog
+        open={confirmDelete}
+        onClose={() => setConfirmDelete(false)}
+        onConfirm={() => { removeWorkout(workout.id); navigate("/"); }}
+        title="Delete Workout?"
+        description="This will permanently remove this workout. This action cannot be undone."
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        variant="danger"
+      />
+    </AppShell>
   );
 }
