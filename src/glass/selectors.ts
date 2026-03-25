@@ -1,13 +1,13 @@
 import type { DisplayData, GlassNavState } from 'even-toolkit/types';
-import { line } from 'even-toolkit/types';
+import { line, glassHeader } from 'even-toolkit/types';
 import { renderTimerLines } from 'even-toolkit/timer-display';
 import { buildActionBar, buildStaticActionBar } from 'even-toolkit/action-bar';
-import { truncate, buildHeaderLine, applyScrollIndicators } from 'even-toolkit/text-utils';
+import { truncate, applyScrollIndicators } from 'even-toolkit/text-utils';
 import type { Workout, ActiveWorkoutState, SessionRecord } from '../types/workout';
 import type { AppLanguage } from '../utils/i18n';
 import { t } from '../utils/i18n';
 const G2_TEXT_LINES = 10;
-const DETAIL_CONTENT_SLOTS = G2_TEXT_LINES - 2; // 8
+const DETAIL_CONTENT_SLOTS = G2_TEXT_LINES - 3; // glassHeader = 3 visual lines
 
 export interface WorkoutSnapshot {
   activeState: ActiveWorkoutState | null;
@@ -79,9 +79,7 @@ function workoutDetailDisplay(workout: Workout, nav: GlassNavState, lang: AppLan
   const contentSlots = DETAIL_CONTENT_SLOTS;
 
   // Fixed header
-  const headerLine = buildHeaderLine(workout.title, buildStaticActionBar([t('glass.start', lang)], 0));
-  const lines = [line(headerLine, 'normal', false)];
-  lines.push(line('', 'normal', false));
+  const lines = [...glassHeader(workout.title, buildStaticActionBar([t('glass.start', lang)], 0))];
 
   // Window the content
   const scrollPos = nav.highlightedIndex;
@@ -116,10 +114,7 @@ function activeDisplay(state: ActiveWorkoutState, workout: Workout, nav: GlassNa
   const buttons = getActiveButtons(state, workout, lang);
   const btnIdx = activeButtonIndex(nav, buttons.length);
   const actionBar = buildActionBar(buttons, btnIdx, null, flash);
-  const headerLine = buildHeaderLine(truncate(exercise?.name ?? '', 30), actionBar);
-
-  const lines = [line(headerLine, 'normal', false)];
-  lines.push(line('', 'normal', false));
+  const lines = [...glassHeader(truncate(exercise?.name ?? '', 30), actionBar)];
 
   if (state.phase === 'rest') {
     const restTotal = exercise?.restSeconds ?? 30;
@@ -147,12 +142,9 @@ function activeDisplay(state: ActiveWorkoutState, workout: Workout, nav: GlassNa
 
 function completeDisplay(state: ActiveWorkoutState, nav: GlassNavState, lang: AppLanguage): DisplayData {
   const elapsed = formatDuration((state.finishedAt ?? Date.now()) - state.startedAt);
-  const headerLine = buildHeaderLine(t('glass.complete', lang), buildStaticActionBar([t('glass.finishWorkout', lang)], 0));
-
   return {
     lines: [
-      line(headerLine, 'normal', false),
-      line('', 'normal'),
+      ...glassHeader(t('glass.complete', lang), buildStaticActionBar([t('glass.finishWorkout', lang)], 0)),
       line(t('glass.allSetsComplete', lang), 'meta'),
       line('', 'normal'),
       line(t('glass.greatWork', lang), 'normal'),
@@ -166,11 +158,9 @@ function completeDisplay(state: ActiveWorkoutState, nav: GlassNavState, lang: Ap
 // ── Editor ──
 
 function editorDisplay(lang: AppLanguage): DisplayData {
-  const headerLine = buildHeaderLine(t('glass.editWorkout', lang), buildStaticActionBar([t('glass.back', lang)], 0));
   return {
     lines: [
-      line(headerLine, 'normal', false),
-      line('', 'normal'),
+      ...glassHeader(t('glass.editWorkout', lang), buildStaticActionBar([t('glass.back', lang)], 0)),
       line(t('glass.usePhone', lang), 'meta'),
     ],
   };
@@ -208,9 +198,7 @@ function historyDisplay(snapshot: WorkoutSnapshot, nav: GlassNavState): DisplayD
   const content = all.slice(1);
   const contentSlots = DETAIL_CONTENT_SLOTS;
 
-  const headerLine = buildHeaderLine(t('glass.history', lang).toUpperCase(), buildStaticActionBar([t('glass.back', lang)], 0));
-  const lines = [line(headerLine, 'normal', false)];
-  lines.push(line('', 'normal', false));
+  const lines = [...glassHeader(t('glass.history', lang).toUpperCase(), buildStaticActionBar([t('glass.back', lang)], 0))];
 
   const scrollPos = nav.highlightedIndex;
   const start = Math.max(0, Math.min(scrollPos, content.length - contentSlots));
