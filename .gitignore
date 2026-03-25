@@ -8,3 +8,4 @@ dist
 app.json
 CLAUDE.md
 .claude/
+*.ehpk
