@@ -1,29 +1,25 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 import { useGlasses } from 'even-toolkit/useGlasses';
 import { useFlashPhase } from 'even-toolkit/useFlashPhase';
+import { createScreenMapper, createIdExtractor, getHomeTiles } from 'even-toolkit/glass-router';
 import { useWorkoutContext } from '../contexts/WorkoutContext';
 import { workoutSplash } from './splash';
-import { toDisplayData, type WorkoutSnapshot } from './selectors';
-import { createActionHandler } from './actions';
+import { toDisplayData, onGlassAction, type WorkoutSnapshot } from './selectors';
+import type { WorkoutActions } from './shared';
 
-function deriveScreen(path: string): string {
-  if (path === '/') return 'workout-list';
-  if (/^\/editor(\/|$)/.test(path)) return 'editor';
-  if (path === '/history') return 'history';
-  if (/^\/workout\/[^/]+\/active$/.test(path)) return 'active';
-  if (/^\/workout\/[^/]+\/complete$/.test(path)) return 'complete';
-  if (/^\/workout\/[^/]+$/.test(path)) return 'workout-detail';
-  return 'workout-list';
-}
+const deriveScreen = createScreenMapper([
+  { pattern: '/', screen: 'workout-list' },
+  { pattern: /^\/editor(\/|$)/, screen: 'editor' },
+  { pattern: '/history', screen: 'history' },
+  { pattern: /^\/workout\/[^/]+\/active$/, screen: 'active' },
+  { pattern: /^\/workout\/[^/]+\/complete$/, screen: 'complete' },
+  { pattern: /^\/workout\/[^/]+$/, screen: 'workout-detail' },
+], 'workout-list');
 
-function extractWorkoutId(path: string): string | null {
-  const match = path.match(/^\/workout\/([^/]+)/);
-  return match ? match[1] : null;
-}
+const extractWorkoutId = createIdExtractor(/^\/workout\/([^/]+)/);
 
-const allTiles = workoutSplash.getTiles();
-const homeTiles = allTiles.length > 0 ? [allTiles[0]!] : [];
+const homeTiles = getHomeTiles(workoutSplash);
 
 export function WorkoutGlasses() {
   const {
@@ -64,15 +60,27 @@ export function WorkoutGlasses() {
 
   const getSnapshot = useCallback(() => snapshotRef.current!, [snapshotRef]);
 
-  const onGlassAction = useMemo(
-    () => createActionHandler(navigate, { startWorkout, completeSet, skipRest, finishWorkout }),
-    [navigate, startWorkout, completeSet, skipRest, finishWorkout],
+  // Build context with side effects for screen action handlers
+  const ctxRef = useRef<WorkoutActions>({
+    navigate,
+    startWorkout,
+    completeSet,
+    skipRest,
+    finishWorkout,
+  });
+  ctxRef.current = { navigate, startWorkout, completeSet, skipRest, finishWorkout };
+
+  // Wrap the router's onGlassAction to inject context
+  const handleGlassAction = useCallback(
+    (action: Parameters<typeof onGlassAction>[0], nav: Parameters<typeof onGlassAction>[1], snap: WorkoutSnapshot) =>
+      onGlassAction(action, nav, snap, ctxRef.current),
+    [],
   );
 
   useGlasses({
     getSnapshot,
     toDisplayData,
-    onGlassAction,
+    onGlassAction: handleGlassAction,
     deriveScreen,
     appName: 'EVENWORKOUT',
     splash: workoutSplash,
