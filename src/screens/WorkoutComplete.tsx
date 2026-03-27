@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from "react-router";
-import { Card, Button, Badge, EmptyState } from "even-toolkit/web";
+import { Card, Button, Badge, EmptyState, useDrawerHeader } from "even-toolkit/web";
 
 interface CompleteState {
   workoutId: string;
@@ -12,6 +12,7 @@ interface CompleteState {
 }
 
 export default function WorkoutComplete() {
+  useDrawerHeader({ hidden: true });
   const navigate = useNavigate();
   const location = useLocation();
   const state = location.state as CompleteState | null;

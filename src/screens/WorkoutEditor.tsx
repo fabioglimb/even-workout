@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router";
 import { useWorkoutContext } from "../contexts/WorkoutContext";
-import { Button, Card, Input, Select, NavHeader, AppShell } from "even-toolkit/web";
-import { IcChevronBack, IcTrash } from "even-toolkit/web/icons/svg-icons";
+import { Button, Card, Input, Select, useDrawerHeader } from "even-toolkit/web";
+import { IcTrash } from "even-toolkit/web/icons/svg-icons";
 import type { Workout, Exercise } from "../types/workout";
 import type { TouchEvent as ReactTouchEvent } from "react";
 
@@ -134,8 +134,12 @@ export default function WorkoutEditor() {
     navigate("/");
   };
 
+  useDrawerHeader({
+    title: isEditing ? "Edit Workout" : "New Workout",
+    backTo: '/',
+  });
+
   return (
-    <AppShell header={<NavHeader title={isEditing ? "Edit Workout" : "New Workout"} left={<Button variant="ghost" size="icon" onClick={() => navigate("/")}><IcChevronBack width={20} height={20} /></Button>} />}>
       <div className="px-3 pt-4 pb-8">
         <div className="flex flex-col gap-4 mb-6">
           <div>
@@ -293,6 +297,5 @@ export default function WorkoutEditor() {
           {isEditing ? "Save Changes" : "Create Workout"}
         </Button>
       </div>
-    </AppShell>
   );
 }

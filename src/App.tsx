@@ -6,15 +6,17 @@ import ActiveWorkout from "./screens/ActiveWorkout";
 import WorkoutComplete from "./screens/WorkoutComplete";
 import WorkoutEditor from "./screens/WorkoutEditor";
 import SessionHistory from "./screens/SessionHistory";
+import Settings from "./screens/Settings";
 import { WorkoutGlasses } from "./glass/WorkoutGlasses";
+import { Shell } from "./layouts/shell";
 
 export default function App() {
   return (
     <BrowserRouter>
       <WorkoutProvider>
         <WorkoutGlasses />
-        <div className="min-h-screen">
-          <Routes>
+        <Routes>
+          <Route element={<Shell />}>
             <Route path="/" element={<WorkoutList />} />
             <Route path="/workout/:id" element={<WorkoutDetail />} />
             <Route path="/workout/:id/active" element={<ActiveWorkout />} />
@@ -22,8 +24,9 @@ export default function App() {
             <Route path="/editor" element={<WorkoutEditor />} />
             <Route path="/editor/:id" element={<WorkoutEditor />} />
             <Route path="/history" element={<SessionHistory />} />
-          </Routes>
-        </div>
+            <Route path="/settings" element={<Settings />} />
+          </Route>
+        </Routes>
       </WorkoutProvider>
     </BrowserRouter>
   );

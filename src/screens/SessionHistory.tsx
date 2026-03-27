@@ -1,13 +1,20 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router";
 import { useWorkoutContext } from "../contexts/WorkoutContext";
-import { Card, Badge, NavHeader, Button, AppShell, EmptyState, ListItem, ConfirmDialog } from "even-toolkit/web";
-import { IcChevronBack, IcTrash } from "even-toolkit/web/icons/svg-icons";
+import { Card, Badge, Button, EmptyState, ListItem, ConfirmDialog, useDrawerHeader } from "even-toolkit/web";
+import { IcTrash } from "even-toolkit/web/icons/svg-icons";
 
 export default function SessionHistory() {
-  const navigate = useNavigate();
   const { sessionHistory, removeSession, clearHistory } = useWorkoutContext();
   const [confirmClear, setConfirmClear] = useState(false);
+
+  useDrawerHeader({
+    title: 'History',
+    right: sessionHistory.length > 0 ? (
+      <Button variant="ghost" size="icon" onClick={() => setConfirmClear(true)}>
+        <IcTrash width={20} height={20} />
+      </Button>
+    ) : undefined,
+  });
 
   const thisWeekCount = useMemo(() => {
     const now = new Date();
@@ -35,23 +42,7 @@ export default function SessionHistory() {
   };
 
   return (
-    <AppShell
-      header={
-        <NavHeader
-          title="Session History"
-          left={
-            <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
-              <IcChevronBack width={20} height={20} />
-            </Button>
-          }
-          right={sessionHistory.length > 0 ? (
-            <Button variant="ghost" size="icon" onClick={() => setConfirmClear(true)}>
-              <IcTrash width={20} height={20} />
-            </Button>
-          ) : undefined}
-        />
-      }
-    >
+    <>
       <div className="px-3 pt-4 pb-8">
         <div className="grid grid-cols-2 gap-3 mb-6">
           <Card variant="elevated" className="text-center">
@@ -91,6 +82,6 @@ export default function SessionHistory() {
         cancelLabel="Cancel"
         variant="danger"
       />
-    </AppShell>
+    </>
   );
 }

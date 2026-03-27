@@ -2,8 +2,7 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router";
 import { getWorkoutById, getTotalSets } from "../data/workouts";
 import { useWorkoutContext } from "../contexts/WorkoutContext";
-import { Card, Button, Badge, NavHeader, AppShell, EmptyState, ConfirmDialog, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "even-toolkit/web";
-import { IcChevronBack } from "even-toolkit/web/icons/svg-icons";
+import { Card, Button, Badge, EmptyState, ConfirmDialog, Table, TableHeader, TableBody, TableRow, TableHead, TableCell, useDrawerHeader } from "even-toolkit/web";
 import { DifficultyBadge } from "../components/shared/DifficultyBadge";
 import { formatDuration } from "../utils/format";
 
@@ -15,11 +14,14 @@ export default function WorkoutDetail() {
 
   const workout = id ? getWorkoutById(id, allWorkouts) : undefined;
 
+  useDrawerHeader({
+    title: workout?.title ?? 'Workout',
+    backTo: '/',
+  });
+
   if (!workout) {
     return (
-      <AppShell header={<NavHeader title="Workout" left={<Button variant="ghost" size="icon" onClick={() => navigate("/")}><IcChevronBack width={20} height={20} /></Button>} />}>
-        <EmptyState title="Workout not found" />
-      </AppShell>
+      <EmptyState title="Workout not found" />
     );
   }
 
@@ -31,7 +33,7 @@ export default function WorkoutDetail() {
   const totalReps = workout.exercises.reduce((sum, ex) => sum + (ex.reps ?? 0) * ex.sets, 0);
 
   return (
-    <AppShell header={<NavHeader title={workout.title} left={<Button variant="ghost" size="icon" onClick={() => navigate("/")}><IcChevronBack width={20} height={20} /></Button>} />}>
+    <>
       <div className="px-3 pb-8">
         {/* Stats badges */}
         <div className="flex flex-wrap items-center gap-2 mt-3 mb-4">
@@ -91,6 +93,6 @@ export default function WorkoutDetail() {
         cancelLabel="Cancel"
         variant="danger"
       />
-    </AppShell>
+    </>
   );
 }
