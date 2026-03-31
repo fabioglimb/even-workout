@@ -82,7 +82,7 @@ export function WorkoutGlasses() {
     toDisplayData,
     onGlassAction: handleGlassAction,
     deriveScreen,
-    appName: 'EVENWORKOUT',
+    appName: 'ER WORKOUT',
     splash: workoutSplash,
     getPageMode: (screen) => screen === 'workout-list' ? 'home' : 'text',
     homeImageTiles: homeTiles,

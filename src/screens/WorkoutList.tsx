@@ -8,7 +8,7 @@ export default function WorkoutList() {
   const { allWorkouts, removeWorkout } = useWorkoutContext();
 
   useDrawerHeader({
-    title: 'EvenWorkout',
+    title: 'ER Workout',
     right: (
       <Button size="sm" onClick={() => navigate("/editor")}>+ New</Button>
     ),

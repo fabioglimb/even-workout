@@ -11,7 +11,7 @@ const BOTTOM_ITEMS: SideDrawerItem[] = [
 ];
 
 function getPageTitle(pathname: string): string {
-  if (pathname === '/') return 'EvenWorkout';
+  if (pathname === '/') return 'ER Workout';
   if (pathname === '/editor') return 'New Workout';
   if (pathname.startsWith('/editor/')) return 'Edit Workout';
   if (pathname.includes('/active')) return 'Active Workout';
@@ -45,7 +45,7 @@ export function Shell() {
     <DrawerShell
       items={MENU_ITEMS}
       bottomItems={BOTTOM_ITEMS}
-      title="EvenWorkout"
+      title="ER Workout"
       getPageTitle={getPageTitle}
       deriveActiveId={deriveActiveId}
       getBackPath={getBackPath}
