@@ -1,5 +1,6 @@
 import { useLocation, useNavigate } from "react-router";
 import { Card, Button, Badge, EmptyState, useDrawerHeader } from "even-toolkit/web";
+import { useTranslation } from "../hooks/useTranslation";
 
 interface CompleteState {
   workoutId: string;
@@ -15,14 +16,15 @@ export default function WorkoutComplete() {
   useDrawerHeader({ hidden: true });
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
   const state = location.state as CompleteState | null;
 
   if (!state) {
     return (
       <div className="px-3 pb-8 text-center pt-8">
-        <EmptyState title="No workout data" />
+        <EmptyState title={t('complete.noData')} />
         <Button variant="ghost" className="mt-4" onClick={() => navigate("/")}>
-          Back to Workouts
+          {t('complete.backToWorkouts')}
         </Button>
       </div>
     );
@@ -35,17 +37,17 @@ export default function WorkoutComplete() {
   return (
     <div className="px-3 pb-8 text-center pt-8">
       <Badge variant="accent" className="mb-4">
-        Workout Complete
+        {t('complete.workoutComplete')}
       </Badge>
       <h1 className="text-[24px] tracking-[-0.72px] text-text mb-2">
         {state.workoutTitle}
       </h1>
-      <p className="text-[13px] tracking-[-0.13px] text-text-dim mb-8">Session finished</p>
+      <p className="text-[13px] tracking-[-0.13px] text-text-dim mb-8">{t('complete.sessionFinished')}</p>
 
       <div className="grid grid-cols-3 gap-4 mb-8">
         <Card variant="elevated">
           <p className="text-[11px] tracking-[-0.11px] text-text-dim mb-1">
-            Duration
+            {t('complete.duration')}
           </p>
           <p className="text-[20px] tracking-[-0.6px] text-accent tabular-nums">
             {durationMin}:{durationSec.toString().padStart(2, "0")}
@@ -53,7 +55,7 @@ export default function WorkoutComplete() {
         </Card>
         <Card variant="elevated">
           <p className="text-[11px] tracking-[-0.11px] text-text-dim mb-1">
-            Sets
+            {t('complete.sets')}
           </p>
           <p className="text-[20px] tracking-[-0.6px] text-accent tabular-nums">
             {state.completedSets}/{state.totalSets}
@@ -61,7 +63,7 @@ export default function WorkoutComplete() {
         </Card>
         <Card variant="elevated">
           <p className="text-[11px] tracking-[-0.11px] text-text-dim mb-1">
-            Exercises
+            {t('complete.exercises')}
           </p>
           <p className="text-[20px] tracking-[-0.6px] text-accent tabular-nums">
             {state.exerciseCount}
@@ -70,7 +72,7 @@ export default function WorkoutComplete() {
       </div>
 
       <Button size="lg" className="w-full" onClick={() => navigate("/")}>
-        Back to Workouts
+        {t('complete.backToWorkouts')}
       </Button>
     </div>
   );

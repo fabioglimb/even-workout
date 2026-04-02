@@ -4,6 +4,7 @@ import { Card } from "even-toolkit/web";
 import { IcTrash } from "even-toolkit/web/icons/svg-icons";
 import { DifficultyBadge } from "./DifficultyBadge";
 import { formatDuration } from "../../utils/format";
+import { useTranslation } from "../../hooks/useTranslation";
 import type { Workout } from "../../types/workout";
 import type { TouchEvent as ReactTouchEvent } from "react";
 
@@ -17,6 +18,7 @@ interface WorkoutCardProps {
 
 export function WorkoutCard({ workout, onDelete }: WorkoutCardProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [offset, setOffset] = useState(0);
   const [swiping, setSwiping] = useState(false);
   const startX = useRef(0);
@@ -88,7 +90,7 @@ export function WorkoutCard({ workout, onDelete }: WorkoutCardProps) {
           </p>
           <div className="flex items-center gap-4 text-[11px] tracking-[-0.11px] text-text-dim">
             <span>{formatDuration(workout.estimatedMinutes)}</span>
-            <span>{workout.exercises.length} exercises</span>
+            <span>{workout.exercises.length} {t('detail.exercises')}</span>
           </div>
         </Card>
       </div>

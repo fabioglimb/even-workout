@@ -2,15 +2,17 @@ import { useNavigate } from "react-router";
 import { useWorkoutContext } from "../contexts/WorkoutContext";
 import { WorkoutCard } from "../components/shared/WorkoutCard";
 import { Button, useDrawerHeader } from "even-toolkit/web";
+import { useTranslation } from "../hooks/useTranslation";
 
 export default function WorkoutList() {
   const navigate = useNavigate();
   const { allWorkouts, removeWorkout } = useWorkoutContext();
+  const { t } = useTranslation();
 
   useDrawerHeader({
     title: 'ER Workout',
     right: (
-      <Button size="sm" onClick={() => navigate("/editor")}>+ New</Button>
+      <Button size="sm" onClick={() => navigate("/editor")}>{t('workoutList.new')}</Button>
     ),
   });
 

@@ -9,11 +9,13 @@ import { Button, Progress, useDrawerHeader } from "even-toolkit/web";
 import { ExerciseCard } from "../components/shared/ExerciseCard";
 import { RestTimer } from "../components/shared/RestTimer";
 import { ExercisePreview } from "../components/shared/ExercisePreview";
+import { useTranslation } from "../hooks/useTranslation";
 
 export default function ActiveWorkout() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { activeState, allWorkouts } = useWorkoutContext();
+  const { t } = useTranslation();
   const { isResting, restRemaining } = useRestTimer();
   const {
     completedSets,
@@ -55,11 +57,11 @@ export default function ActiveWorkout() {
   };
 
   useDrawerHeader({
-    title: workout?.title ?? 'Workout',
+    title: workout?.title ?? t('editor.workout'),
     backTo: `/workout/${id}`,
     right: (
       <span className="text-[11px] tracking-[-0.11px] text-text-dim tabular-nums">
-        {completedSets}/{totalSets} sets
+        {completedSets}/{totalSets} {t('active.sets')}
       </span>
     ),
     below: (
@@ -82,24 +84,24 @@ export default function ActiveWorkout() {
         <div className="flex flex-col items-center gap-6 w-full">
           <RestTimer remaining={restRemaining} total={currentExercise.restSeconds} onSkip={skipRest} />
           <Button size="lg" className="w-full" onClick={skipRest}>
-            Skip Rest
+            {t('active.skipRest')}
           </Button>
         </div>
       ) : isWorkoutDone ? (
         <div className="flex flex-col items-center gap-6 w-full text-center">
           <div>
-            <p className="text-[17px] tracking-[-0.17px] text-text-dim mb-2">All Sets Complete</p>
-            <h2 className="text-[24px] tracking-[-0.72px] text-text">Great Work!</h2>
+            <p className="text-[17px] tracking-[-0.17px] text-text-dim mb-2">{t('active.allSetsComplete')}</p>
+            <h2 className="text-[24px] tracking-[-0.72px] text-text">{t('active.greatWork')}</h2>
           </div>
           <Button size="lg" className="w-full" onClick={handleFinish}>
-            Finish Workout
+            {t('active.finishWorkout')}
           </Button>
         </div>
       ) : (
         <div className="flex flex-col items-center gap-6 w-full">
           <ExerciseCard exercise={currentExercise} currentSet={currentSet} />
           <Button size="lg" className="w-full" onClick={completeSet}>
-            Complete Set
+            {t('active.completeSet')}
           </Button>
           {nextExercise && (
             <ExercisePreview exercise={nextExercise} />

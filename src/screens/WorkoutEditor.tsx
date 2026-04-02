@@ -1,22 +1,38 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router";
 import { useWorkoutContext } from "../contexts/WorkoutContext";
 import { Button, Card, Input, Select, useDrawerHeader } from "even-toolkit/web";
 import { IcTrash } from "even-toolkit/web/icons/svg-icons";
 import type { Workout, Exercise } from "../types/workout";
-import type { TouchEvent as ReactTouchEvent } from "react";
-
-const DELETE_WIDTH = 72;
-const SWIPE_THRESHOLD = 40;
+import { useTranslation } from "../hooks/useTranslation";
 
 function emptyExercise(): Exercise {
   return { name: "", sets: 3, reps: 10, durationSeconds: null, restSeconds: 45 };
+}
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-2 mb-1.5 mt-2">
+      <span className="text-[11px] tracking-[-0.11px] text-text-dim font-normal uppercase">{children}</span>
+      <div className="flex-1 h-[1px] bg-border" />
+    </div>
+  );
+}
+
+function FieldRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="py-3 border-b border-border last:border-b-0">
+      <span className="text-[11px] tracking-[-0.11px] text-text-dim font-normal">{label}</span>
+      <div className="mt-1">{children}</div>
+    </div>
+  );
 }
 
 export default function WorkoutEditor() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { allWorkouts, addWorkout, updateWorkout } = useWorkoutContext();
+  const { t } = useTranslation();
   const isEditing = Boolean(id);
 
   const [title, setTitle] = useState("");
@@ -66,52 +82,6 @@ export default function WorkoutEditor() {
     setExercises((prev) => [...prev, emptyExercise()]);
   };
 
-  // Swipe-to-delete state
-  const [swipeOffsets, setSwipeOffsets] = useState<Record<number, number>>({});
-  const [swipingIndex, setSwipingIndex] = useState<number | null>(null);
-  const swipeStartX = useRef(0);
-  const swipeStartY = useRef(0);
-  const swipeCurrentOffset = useRef(0);
-  const swipeDir = useRef<'none' | 'h' | 'v'>('none');
-
-  const onExTouchStart = useCallback((e: ReactTouchEvent, index: number) => {
-    if (exercises.length <= 1) return;
-    swipeStartX.current = e.touches[0].clientX;
-    swipeStartY.current = e.touches[0].clientY;
-    swipeCurrentOffset.current = swipeOffsets[index] ?? 0;
-    swipeDir.current = 'none';
-    setSwipingIndex(index);
-  }, [exercises.length, swipeOffsets]);
-
-  const onExTouchMove = useCallback((e: ReactTouchEvent) => {
-    if (swipingIndex === null) return;
-    const dx = e.touches[0].clientX - swipeStartX.current;
-    const dy = e.touches[0].clientY - swipeStartY.current;
-    if (swipeDir.current === 'none') {
-      if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
-        swipeDir.current = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v';
-      }
-      return;
-    }
-    if (swipeDir.current === 'v') return;
-    setSwipeOffsets((prev) => ({
-      ...prev,
-      [swipingIndex]: Math.min(0, Math.max(-DELETE_WIDTH, swipeCurrentOffset.current + dx)),
-    }));
-  }, [swipingIndex]);
-
-  const onExTouchEnd = useCallback(() => {
-    if (swipingIndex === null) return;
-    const idx = swipingIndex;
-    setSwipingIndex(null);
-    if (swipeDir.current === 'v') return;
-    const current = swipeOffsets[idx] ?? 0;
-    setSwipeOffsets((prev) => ({
-      ...prev,
-      [idx]: current < -SWIPE_THRESHOLD ? -DELETE_WIDTH : 0,
-    }));
-  }, [swipingIndex, swipeOffsets]);
-
   const handleSave = () => {
     if (!title.trim() || exercises.length === 0) return;
     const validExercises = exercises.filter((e) => e.name.trim());
@@ -135,167 +105,155 @@ export default function WorkoutEditor() {
   };
 
   useDrawerHeader({
-    title: isEditing ? "Edit Workout" : "New Workout",
+    title: isEditing ? t('editor.editWorkout') : t('editor.newWorkout'),
     backTo: '/',
   });
 
   return (
-      <div className="px-3 pt-4 pb-8">
-        <div className="flex flex-col gap-4 mb-6">
-          <div>
-            <label className="block text-[11px] tracking-[-0.11px] text-text-dim mb-1">
-              Title
-            </label>
-            <Input
-              placeholder="Workout name"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
-          </div>
+    <div className="px-3 pt-4 pb-8">
+      {/* Workout Details */}
+      <SectionLabel>{t('editor.workout')}</SectionLabel>
+      <Card className="mb-4">
+        <FieldRow label={t('editor.name')}>
+          <Input
+            placeholder={t('editor.workoutName')}
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+        </FieldRow>
+        <FieldRow label={t('editor.difficulty')}>
+          <Select
+            options={[
+              { label: t('editor.beginner'), value: "beginner" },
+              { label: t('editor.intermediate'), value: "intermediate" },
+              { label: t('editor.advanced'), value: "advanced" },
+            ]}
+            value={difficulty}
+            onValueChange={(val) => setDifficulty(val as Workout["difficulty"])}
+          />
+        </FieldRow>
+        <FieldRow label={t('editor.targetMuscles')}>
+          <Input
+            placeholder={t('editor.targetPlaceholder')}
+            value={target}
+            onChange={(e) => setTarget(e.target.value)}
+          />
+        </FieldRow>
+        <FieldRow label={t('editor.estMinutes')}>
+          <Input
+            type="number"
+            min={1}
+            value={estimatedMinutes}
+            onChange={(e) => setEstimatedMinutes(Number(e.target.value) || 1)}
+          />
+        </FieldRow>
+      </Card>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-[11px] tracking-[-0.11px] text-text-dim mb-1">
-                Difficulty
-              </label>
-              <Select
-                options={[
-                  { label: "Beginner", value: "beginner" },
-                  { label: "Intermediate", value: "intermediate" },
-                  { label: "Advanced", value: "advanced" },
-                ]}
-                value={difficulty}
-                onValueChange={(val) => setDifficulty(val as Workout["difficulty"])}
-              />
-            </div>
-            <div>
-              <label className="block text-[11px] tracking-[-0.11px] text-text-dim mb-1">
-                Est. Minutes
-              </label>
-              <Input
-                type="number"
-                min={1}
-                value={estimatedMinutes}
-                onChange={(e) => setEstimatedMinutes(Number(e.target.value) || 1)}
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-[11px] tracking-[-0.11px] text-text-dim mb-1">
-              Target Muscles
-            </label>
-            <Input
-              placeholder="e.g. Chest, Back"
-              value={target}
-              onChange={(e) => setTarget(e.target.value)}
-            />
-          </div>
-        </div>
-
-        <h2 className="text-[13px] tracking-[-0.13px] text-text-dim mb-3">
-          Exercises
-        </h2>
-
-        <div className="flex flex-col gap-3 mb-4">
-          {exercises.map((ex, i) => {
-            const isTimed = ex.durationSeconds !== null;
-            const exOffset = swipeOffsets[i] ?? 0;
-            const isSwiping = swipingIndex === i;
-            return (
-              <div key={i} className="relative overflow-hidden rounded-[6px]">
-                {exercises.length > 1 && exOffset < 0 && (
-                  <button
-                    type="button"
+      {/* Exercises */}
+      <SectionLabel>{t('editor.exercises')}</SectionLabel>
+      <Card className="mb-4">
+        {exercises.map((ex, i) => {
+          const isTimed = ex.durationSeconds !== null;
+          return (
+            <div key={i} className="py-3 border-b border-border last:border-b-0">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[11px] tracking-[-0.11px] text-text-dim font-normal">{t('editor.exercise')} {i + 1}</span>
+                {exercises.length > 1 && (
+                  <Button
+                    size="icon"
+                    variant="ghost"
                     onClick={() => removeExercise(i)}
-                    className="absolute right-0 top-0 bottom-0 flex items-center justify-center bg-negative text-text-highlight cursor-pointer rounded-r-[6px]"
-                    style={{ width: DELETE_WIDTH }}
                   >
-                    <IcTrash width={20} height={20} />
-                  </button>
+                    <IcTrash width={16} height={16} />
+                  </Button>
                 )}
-                <div
-                  onTouchStart={(e) => onExTouchStart(e, i)}
-                  onTouchMove={onExTouchMove}
-                  onTouchEnd={onExTouchEnd}
-                  style={{
-                    transform: `translateX(${exOffset}px)`,
-                    transition: isSwiping ? 'none' : 'transform 200ms ease',
-                  }}
-                >
-                  <Card className="relative">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-[11px] tracking-[-0.11px] text-text-dim">Exercise {i + 1}</span>
-                    </div>
+              </div>
+              <div className="space-y-2">
+                <div>
+                  <span className="text-[11px] tracking-[-0.11px] text-text-dim font-normal">{t('editor.name')}</span>
+                  <Input
+                    className="mt-1"
+                    placeholder={t('editor.exerciseName')}
+                    value={ex.name}
+                    onChange={(e) => updateExercise(i, "name", e.target.value)}
+                  />
+                </div>
+                <div className="grid grid-cols-4 gap-2">
+                  <div>
+                    <span className="text-[11px] tracking-[-0.11px] text-text-dim font-normal">{t('editor.sets')}</span>
                     <Input
-                      className="mb-2"
-                      placeholder="Exercise name"
-                      value={ex.name}
-                      onChange={(e) => updateExercise(i, "name", e.target.value)}
+                      className="mt-1"
+                      type="number"
+                      min={1}
+                      value={ex.sets}
+                      onChange={(e) => updateExercise(i, "sets", Number(e.target.value) || 1)}
                     />
-                    <div className="grid grid-cols-4 gap-2 mb-2">
-                      <div>
-                        <label className="block text-[11px] tracking-[-0.11px] text-text-dim mb-0.5">Sets</label>
-                        <Input
-                          type="number"
-                          min={1}
-                          value={ex.sets}
-                          onChange={(e) => updateExercise(i, "sets", Number(e.target.value) || 1)}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[11px] tracking-[-0.11px] text-text-dim mb-0.5">
-                          {isTimed ? "Secs" : "Reps"}
-                        </label>
-                        <Input
-                          type="number"
-                          min={1}
-                          value={isTimed ? (ex.durationSeconds ?? 30) : (ex.reps ?? 10)}
-                          onChange={(e) => {
-                            const val = Number(e.target.value) || 1;
-                            if (isTimed) {
-                              updateExercise(i, "durationSeconds", val);
-                            } else {
-                              updateExercise(i, "reps", val);
-                            }
-                          }}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[11px] tracking-[-0.11px] text-text-dim mb-0.5">Rest(s)</label>
-                        <Input
-                          type="number"
-                          min={0}
-                          value={ex.restSeconds}
-                          onChange={(e) => updateExercise(i, "restSeconds", Number(e.target.value) || 0)}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[11px] tracking-[-0.11px] text-text-dim mb-0.5">Type</label>
-                        <Select
-                          options={[
-                            { label: "Reps", value: "reps" },
-                            { label: "Timed", value: "timed" },
-                          ]}
-                          value={isTimed ? "timed" : "reps"}
-                          onValueChange={(val) => toggleExerciseType(i, val === "timed")}
-                        />
-                      </div>
-                    </div>
-                  </Card>
+                  </div>
+                  <div>
+                    <span className="text-[11px] tracking-[-0.11px] text-text-dim font-normal">
+                      {isTimed ? t('editor.secs') : t('editor.reps')}
+                    </span>
+                    <Input
+                      className="mt-1"
+                      type="number"
+                      min={1}
+                      value={isTimed ? (ex.durationSeconds ?? 30) : (ex.reps ?? 10)}
+                      onChange={(e) => {
+                        const val = Number(e.target.value) || 1;
+                        if (isTimed) {
+                          updateExercise(i, "durationSeconds", val);
+                        } else {
+                          updateExercise(i, "reps", val);
+                        }
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <span className="text-[11px] tracking-[-0.11px] text-text-dim font-normal">{t('editor.restS')}</span>
+                    <Input
+                      className="mt-1"
+                      type="number"
+                      min={0}
+                      value={ex.restSeconds}
+                      onChange={(e) => updateExercise(i, "restSeconds", Number(e.target.value) || 0)}
+                    />
+                  </div>
+                  <div>
+                    <span className="text-[11px] tracking-[-0.11px] text-text-dim font-normal">{t('editor.type')}</span>
+                    <Select
+                      className="mt-1"
+                      options={[
+                        { label: t('editor.reps'), value: "reps" },
+                        { label: t('editor.timed'), value: "timed" },
+                      ]}
+                      value={isTimed ? "timed" : "reps"}
+                      onValueChange={(val) => toggleExerciseType(i, val === "timed")}
+                    />
+                  </div>
                 </div>
               </div>
-            );
-          })}
+            </div>
+          );
+        })}
+        <div className="py-3">
+          <Button
+            size="sm"
+            variant="ghost"
+            className="w-full"
+            onClick={addExercise}
+          >
+            {t('editor.addExercise')}
+          </Button>
         </div>
+      </Card>
 
-        <Button variant="ghost" className="w-full mb-6" onClick={addExercise}>
-          + Add Exercise
-        </Button>
-
-        <Button size="lg" className="w-full" onClick={handleSave}>
-          {isEditing ? "Save Changes" : "Create Workout"}
+      {/* Bottom Buttons */}
+      <div className="flex items-center justify-between gap-3 pt-2">
+        <Button variant="ghost" onClick={() => navigate("/")}>{t('editor.cancel')}</Button>
+        <Button onClick={handleSave} disabled={!title.trim()}>
+          {isEditing ? t('editor.saveChanges') : t('editor.createWorkout')}
         </Button>
       </div>
+    </div>
   );
 }
