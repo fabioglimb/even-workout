@@ -3,6 +3,8 @@ import {
   useContext,
   useState,
   useCallback,
+  useEffect,
+  useRef,
   type ReactNode,
 } from "react";
 import type { Workout, ActiveWorkoutState, SessionRecord } from "../types/workout";
@@ -25,6 +27,7 @@ interface WorkoutContextValue {
   allWorkouts: Workout[];
   customWorkouts: Workout[];
   sessionHistory: SessionRecord[];
+  loaded: boolean;
   startWorkout: (workoutId: string) => void;
   completeSet: () => void;
   skipRest: () => void;
@@ -44,16 +47,35 @@ const WorkoutContext = createContext<WorkoutContextValue | null>(null);
 
 export function WorkoutProvider({ children }: { children: ReactNode }) {
   const [activeState, setActiveState] = useState<ActiveWorkoutState | null>(null);
-  const [customWorkouts, setCustomWorkouts] = useState<Workout[]>(() => {
-    const saved = loadCustomWorkouts();
-    if (saved.length === 0) {
-      saveCustomWorkouts(presetWorkouts);
-      return presetWorkouts;
+  const [customWorkouts, setCustomWorkouts] = useState<Workout[]>(presetWorkouts);
+  const [sessionHistory, setSessionHistory] = useState<SessionRecord[]>([]);
+  const [language, setLanguageState] = useState<AppLanguage>('en');
+  const [loaded, setLoaded] = useState(false);
+
+  // Keep a ref to the latest customWorkouts so sync callbacks (state updaters) can read it
+  const workoutsRef = useRef(customWorkouts);
+  workoutsRef.current = customWorkouts;
+
+  useEffect(() => {
+    async function init() {
+      const [saved, history, lang] = await Promise.all([
+        loadCustomWorkouts(),
+        loadSessionHistory(),
+        loadLanguage(),
+      ]);
+
+      if (saved.length > 0) {
+        setCustomWorkouts(saved);
+      } else {
+        saveCustomWorkouts(presetWorkouts);
+      }
+
+      setSessionHistory(history);
+      setLanguageState(lang);
+      setLoaded(true);
     }
-    return saved;
-  });
-  const [sessionHistory, setSessionHistory] = useState<SessionRecord[]>(() => loadSessionHistory());
-  const [language, setLanguageState] = useState<AppLanguage>(() => loadLanguage());
+    init();
+  }, []);
 
   const setLanguage = useCallback((lang: AppLanguage) => {
     setLanguageState(lang);
@@ -67,7 +89,7 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
     : null;
 
   const startWorkout = useCallback((workoutId: string) => {
-    const workout = getWorkoutById(workoutId, loadCustomWorkouts());
+    const workout = getWorkoutById(workoutId, workoutsRef.current);
     if (!workout) return;
     setActiveState({
       workoutId,
@@ -86,7 +108,7 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
     // Read current state to check if this completes the workout
     const current = activeState;
     if (current) {
-      const cw = loadCustomWorkouts();
+      const cw = workoutsRef.current;
       const wo = getWorkoutById(current.workoutId, cw);
       if (wo) {
         const ex = wo.exercises[current.exerciseIndex];
@@ -112,7 +134,7 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
 
     setActiveState((prev) => {
       if (!prev) return prev;
-      const workout = getWorkoutById(prev.workoutId, loadCustomWorkouts());
+      const workout = getWorkoutById(prev.workoutId, workoutsRef.current);
       if (!workout) return prev;
 
       const exercise = workout.exercises[prev.exerciseIndex];
@@ -157,7 +179,7 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
   const skipRest = useCallback(() => {
     setActiveState((prev) => {
       if (!prev) return prev;
-      const workout = getWorkoutById(prev.workoutId, loadCustomWorkouts());
+      const workout = getWorkoutById(prev.workoutId, workoutsRef.current);
       if (!workout) return prev;
 
       const exercise = workout.exercises[prev.exerciseIndex];
@@ -248,6 +270,7 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
         allWorkouts,
         customWorkouts,
         sessionHistory,
+        loaded,
         startWorkout,
         completeSet,
         skipRest,
