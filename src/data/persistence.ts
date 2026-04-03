@@ -1,6 +1,6 @@
 import type { Workout, SessionRecord } from "../types/workout";
 import type { AppLanguage } from "../utils/i18n";
-import { storageGet, storageSet, storageRemove } from "even-toolkit/storage";
+import { storageGet, storageSet, storageRemove } from "./bridge-storage";
 
 const CUSTOM_WORKOUTS_KEY = "even-workout:custom-workouts";
 const SESSION_HISTORY_KEY = "even-workout:session-history";
