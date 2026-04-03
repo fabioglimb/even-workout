@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.1.7
+
+Released: 2026-04-03
+
+No breaking changes.
+
+### Changed
+
+- aligned the app with `even-toolkit` 1.6.3 for shared bridge-only storage behavior
+
+### Notes
+
+- workouts, history, and settings remain compatible with previous 0.1.x releases
+
 ## 0.1.6
 
 Released: 2026-04-02
