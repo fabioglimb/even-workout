@@ -5,7 +5,7 @@ import { useFlashPhase } from 'even-toolkit/useFlashPhase';
 import { createScreenMapper, createIdExtractor, getHomeTiles } from 'even-toolkit/glass-router';
 import { useWorkoutContext } from '../contexts/WorkoutContext';
 import { workoutSplash } from './splash';
-import { toDisplayData, onGlassAction, type WorkoutSnapshot } from './selectors';
+import { toDisplayData, toSplitData, onGlassAction, type WorkoutSnapshot } from './selectors';
 import type { WorkoutActions } from './shared';
 
 const deriveScreen = createScreenMapper([
@@ -80,11 +80,16 @@ export function WorkoutGlasses() {
   useGlasses({
     getSnapshot,
     toDisplayData,
+    toSplit: toSplitData,
     onGlassAction: handleGlassAction,
     deriveScreen,
     appName: 'ER WORKOUT',
     splash: workoutSplash,
-    getPageMode: (screen) => screen === 'workout-list' ? 'home' : 'text',
+    getPageMode: (screen) => {
+      if (screen === 'workout-list') return 'home';
+      if (screen === 'workout-detail' || screen === 'active') return 'split';
+      return 'text';
+    },
     homeImageTiles: homeTiles,
   });
 

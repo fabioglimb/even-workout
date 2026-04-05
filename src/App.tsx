@@ -7,6 +7,7 @@ import WorkoutComplete from "./screens/WorkoutComplete";
 import WorkoutEditor from "./screens/WorkoutEditor";
 import SessionHistory from "./screens/SessionHistory";
 import Settings from "./screens/Settings";
+import WorkoutCalendar from "./screens/WorkoutCalendar";
 import { WorkoutGlasses } from "./glass/WorkoutGlasses";
 import { Shell } from "./layouts/shell";
 
@@ -23,6 +24,7 @@ export default function App() {
             <Route path="/workout/:id/complete" element={<WorkoutComplete />} />
             <Route path="/editor" element={<WorkoutEditor />} />
             <Route path="/editor/:id" element={<WorkoutEditor />} />
+            <Route path="/calendar" element={<WorkoutCalendar />} />
             <Route path="/history" element={<SessionHistory />} />
             <Route path="/settings" element={<Settings />} />
           </Route>

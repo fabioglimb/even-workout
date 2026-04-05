@@ -15,6 +15,7 @@ export interface Exercise {
   sets: number;
   reps: number | null;
   durationSeconds: number | null;
+  weightKg?: number | null;
   restSeconds: number;
 }
 
@@ -28,6 +29,13 @@ export interface SessionRecord {
   totalExercises: number;
   setsCompleted: number;
   totalSets: number;
+}
+
+export interface WorkoutScheduleEntry {
+  id: string;
+  workoutId: string;
+  scheduledFor: string;
+  scheduledTime?: string;
 }
 
 export type WorkoutPhase = "exercise" | "rest";

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router";
 import { getWorkoutById, getTotalSets } from "../data/workouts";
 import { useWorkoutContext } from "../contexts/WorkoutContext";
 import { Card, Button, Badge, EmptyState, ConfirmDialog, Table, TableHeader, TableBody, TableRow, TableHead, TableCell, useDrawerHeader } from "even-toolkit/web";
+import { IcFeatCalendar } from "even-toolkit/web/icons/svg-icons";
 import { DifficultyBadge } from "../components/shared/DifficultyBadge";
 import { formatDuration } from "../utils/format";
 import { useTranslation } from "../hooks/useTranslation";
@@ -54,6 +55,7 @@ export default function WorkoutDetail() {
                 <TableHead>{t('detail.exercise')}</TableHead>
                 <TableHead className="text-center">{t('editor.sets')}</TableHead>
                 <TableHead className="text-center">{t('detail.repsDur')}</TableHead>
+                <TableHead className="text-center">{t('detail.kg')}</TableHead>
                 <TableHead className="text-center">{t('detail.rest')}</TableHead>
               </TableRow>
             </TableHeader>
@@ -65,6 +67,7 @@ export default function WorkoutDetail() {
                   <TableCell className="text-center text-text-dim tabular-nums">
                     {ex.reps !== null ? `${ex.reps}` : `${ex.durationSeconds}s`}
                   </TableCell>
+                  <TableCell className="text-center text-text-dim tabular-nums">{ex.weightKg ?? '--'}</TableCell>
                   <TableCell className="text-center text-text-dim tabular-nums">{ex.restSeconds}s</TableCell>
                 </TableRow>
               ))}
@@ -74,6 +77,15 @@ export default function WorkoutDetail() {
 
         <Button size="lg" className="w-full" onClick={handleStart}>
           {t('detail.startWorkout')}
+        </Button>
+
+        <Button
+          variant="secondary"
+          className="w-full mt-3"
+          onClick={() => navigate(`/calendar?workout=${workout.id}`)}
+        >
+          <IcFeatCalendar width={18} height={18} />
+          {t('detail.schedule')}
         </Button>
 
         <div className="flex gap-2 mt-4">

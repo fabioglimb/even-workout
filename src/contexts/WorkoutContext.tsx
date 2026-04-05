@@ -7,7 +7,7 @@ import {
   useRef,
   type ReactNode,
 } from "react";
-import type { Workout, ActiveWorkoutState, SessionRecord } from "../types/workout";
+import type { Workout, ActiveWorkoutState, SessionRecord, WorkoutScheduleEntry } from "../types/workout";
 import type { AppLanguage } from "../utils/i18n";
 import { presetWorkouts, getWorkoutById, getTotalSets } from "../data/workouts";
 import {
@@ -19,6 +19,8 @@ import {
   clearSessionHistory,
   loadLanguage,
   saveLanguage,
+  loadWorkoutSchedule,
+  saveWorkoutSchedule,
 } from "../data/persistence";
 
 interface WorkoutContextValue {
@@ -27,6 +29,7 @@ interface WorkoutContextValue {
   allWorkouts: Workout[];
   customWorkouts: Workout[];
   sessionHistory: SessionRecord[];
+  scheduleEntries: WorkoutScheduleEntry[];
   loaded: boolean;
   startWorkout: (workoutId: string) => void;
   completeSet: () => void;
@@ -39,6 +42,9 @@ interface WorkoutContextValue {
   recordSession: (record: SessionRecord) => void;
   removeSession: (id: string) => void;
   clearHistory: () => void;
+  scheduleWorkout: (workoutId: string, scheduledFor: string, scheduledTime?: string) => void;
+  removeScheduledWorkout: (id: string) => void;
+  moveScheduledWorkout: (id: string, scheduledFor: string, scheduledTime?: string) => void;
   language: AppLanguage;
   setLanguage: (lang: AppLanguage) => void;
 }
@@ -49,6 +55,7 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
   const [activeState, setActiveState] = useState<ActiveWorkoutState | null>(null);
   const [customWorkouts, setCustomWorkouts] = useState<Workout[]>(presetWorkouts);
   const [sessionHistory, setSessionHistory] = useState<SessionRecord[]>([]);
+  const [scheduleEntries, setScheduleEntries] = useState<WorkoutScheduleEntry[]>([]);
   const [language, setLanguageState] = useState<AppLanguage>('en');
   const [loaded, setLoaded] = useState(false);
 
@@ -58,10 +65,11 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     async function init() {
-      const [saved, history, lang] = await Promise.all([
+      const [saved, history, lang, schedule] = await Promise.all([
         loadCustomWorkouts(),
         loadSessionHistory(),
         loadLanguage(),
+        loadWorkoutSchedule(),
       ]);
 
       if (saved.length > 0) {
@@ -71,6 +79,7 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
       }
 
       setSessionHistory(history);
+      setScheduleEntries(schedule);
       setLanguageState(lang);
       setLoaded(true);
     }
@@ -262,6 +271,56 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
     setSessionHistory([]);
   }, []);
 
+  const scheduleWorkout = useCallback((workoutId: string, scheduledFor: string, scheduledTime = '07:00') => {
+    setScheduleEntries((prev) => {
+      if (prev.some((entry) =>
+        entry.workoutId === workoutId &&
+        entry.scheduledFor === scheduledFor &&
+        (entry.scheduledTime ?? '07:00') === scheduledTime,
+      )) {
+        return prev;
+      }
+      const next = [...prev, {
+        id: `${workoutId}:${scheduledFor}:${scheduledTime}:${Date.now().toString(36)}`,
+        workoutId,
+        scheduledFor,
+        scheduledTime,
+      }].sort((a, b) => {
+        if (a.scheduledFor !== b.scheduledFor) return a.scheduledFor.localeCompare(b.scheduledFor);
+        if ((a.scheduledTime ?? '07:00') !== (b.scheduledTime ?? '07:00')) {
+          return (a.scheduledTime ?? '07:00').localeCompare(b.scheduledTime ?? '07:00');
+        }
+        return a.workoutId.localeCompare(b.workoutId);
+      });
+      saveWorkoutSchedule(next);
+      return next;
+    });
+  }, []);
+
+  const removeScheduledWorkout = useCallback((id: string) => {
+    setScheduleEntries((prev) => {
+      const next = prev.filter((entry) => entry.id !== id);
+      saveWorkoutSchedule(next);
+      return next;
+    });
+  }, []);
+
+  const moveScheduledWorkout = useCallback((id: string, scheduledFor: string, scheduledTime = '07:00') => {
+    setScheduleEntries((prev) => {
+      const next = prev
+        .map((entry) => entry.id === id ? { ...entry, scheduledFor, scheduledTime } : entry)
+        .sort((a, b) => {
+          if (a.scheduledFor !== b.scheduledFor) return a.scheduledFor.localeCompare(b.scheduledFor);
+          if ((a.scheduledTime ?? '07:00') !== (b.scheduledTime ?? '07:00')) {
+            return (a.scheduledTime ?? '07:00').localeCompare(b.scheduledTime ?? '07:00');
+          }
+          return a.workoutId.localeCompare(b.workoutId);
+        });
+      saveWorkoutSchedule(next);
+      return next;
+    });
+  }, []);
+
   return (
     <WorkoutContext.Provider
       value={{
@@ -270,6 +329,7 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
         allWorkouts,
         customWorkouts,
         sessionHistory,
+        scheduleEntries,
         loaded,
         startWorkout,
         completeSet,
@@ -282,6 +342,9 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
         recordSession,
         removeSession,
         clearHistory,
+        scheduleWorkout,
+        removeScheduledWorkout,
+        moveScheduledWorkout,
         language,
         setLanguage,
       }}

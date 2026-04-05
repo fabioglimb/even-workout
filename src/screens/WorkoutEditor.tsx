@@ -1,29 +1,194 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback, type ReactNode, type TouchEvent as ReactTouchEvent } from "react";
 import { useParams, useNavigate } from "react-router";
 import { useWorkoutContext } from "../contexts/WorkoutContext";
-import { Button, Card, Input, Select, useDrawerHeader } from "even-toolkit/web";
-import { IcTrash } from "even-toolkit/web/icons/svg-icons";
+import { BottomActionBar, Button, Card, Input, Select, useDrawerHeader } from "even-toolkit/web";
+import { IcEditAdd, IcTrash } from "even-toolkit/web/icons/svg-icons";
 import type { Workout, Exercise } from "../types/workout";
 import { useTranslation } from "../hooks/useTranslation";
 
+const DELETE_WIDTH = 72;
+const SWIPE_THRESHOLD = 40;
+const DIRECTION_LOCK_PX = 10;
+
 function emptyExercise(): Exercise {
-  return { name: "", sets: 3, reps: 10, durationSeconds: null, restSeconds: 45 };
+  return { name: "", sets: 3, reps: 10, durationSeconds: null, weightKg: null, restSeconds: 45 };
 }
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
+type ExerciseDraft = {
+  name: string;
+  sets: string;
+  reps: string;
+  durationSeconds: string;
+  weightKg: string;
+  restSeconds: string;
+  mode: "reps" | "timed";
+};
+
+function emptyExerciseDraft(): ExerciseDraft {
+  return {
+    name: "",
+    sets: "3",
+    reps: "10",
+    durationSeconds: "30",
+    weightKg: "",
+    restSeconds: "45",
+    mode: "reps",
+  };
+}
+
+function toExerciseDraft(exercise: Exercise): ExerciseDraft {
+  return {
+    name: exercise.name,
+    sets: String(exercise.sets),
+    reps: String(exercise.reps ?? 10),
+    durationSeconds: String(exercise.durationSeconds ?? 30),
+    weightKg: exercise.weightKg == null ? "" : String(exercise.weightKg),
+    restSeconds: String(exercise.restSeconds),
+    mode: exercise.durationSeconds != null ? "timed" : "reps",
+  };
+}
+
+function parsePositiveInt(value: string, fallback = 1): number {
+  if (value.trim() === "") return fallback;
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.max(1, Math.round(parsed));
+}
+
+function parseNonNegativeInt(value: string, fallback = 0): number {
+  if (value.trim() === "") return fallback;
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.max(0, Math.round(parsed));
+}
+
+function parseOptionalNumber(value: string): number | null {
+  if (value.trim() === "") return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function toExercise(draft: ExerciseDraft): Exercise {
+  const sets = parsePositiveInt(draft.sets, 1);
+  const restSeconds = parseNonNegativeInt(draft.restSeconds, 0);
+  const weightKg = parseOptionalNumber(draft.weightKg);
+
+  if (draft.mode === "timed") {
+    return {
+      name: draft.name,
+      sets,
+      reps: null,
+      durationSeconds: parsePositiveInt(draft.durationSeconds, 1),
+      weightKg,
+      restSeconds,
+    };
+  }
+
+  return {
+    name: draft.name,
+    sets,
+    reps: parsePositiveInt(draft.reps, 1),
+    durationSeconds: null,
+    weightKg,
+    restSeconds,
+  };
+}
+
+function SectionLabel({ children }: { children: ReactNode }) {
   return (
-    <div className="flex items-center gap-2 mb-1.5 mt-2">
+    <div className="mt-2 mb-1.5 flex items-center gap-2">
       <span className="text-[11px] tracking-[-0.11px] text-text-dim font-normal uppercase">{children}</span>
       <div className="flex-1 h-[1px] bg-border" />
     </div>
   );
 }
 
-function FieldRow({ label, children }: { label: string; children: React.ReactNode }) {
+function FieldRow({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="py-3 border-b border-border last:border-b-0">
+    <div className="px-3 py-3 border-b border-border last:border-b-0">
       <span className="text-[11px] tracking-[-0.11px] text-text-dim font-normal">{label}</span>
       <div className="mt-1">{children}</div>
+    </div>
+  );
+}
+
+function SwipeDeleteCard({
+  children,
+  onDelete,
+}: {
+  children: ReactNode;
+  onDelete?: () => void;
+}) {
+  const [offset, setOffset] = useState(0);
+  const [swiping, setSwiping] = useState(false);
+  const startX = useRef(0);
+  const startY = useRef(0);
+  const currentOffset = useRef(0);
+  const direction = useRef<'none' | 'horizontal' | 'vertical'>('none');
+
+  const onTouchStart = useCallback((e: ReactTouchEvent<HTMLDivElement>) => {
+    if (!onDelete) return;
+    startX.current = e.touches[0].clientX;
+    startY.current = e.touches[0].clientY;
+    currentOffset.current = offset;
+    direction.current = 'none';
+    setSwiping(true);
+  }, [offset, onDelete]);
+
+  const onTouchMove = useCallback((e: ReactTouchEvent<HTMLDivElement>) => {
+    if (!swiping || !onDelete) return;
+    const dx = e.touches[0].clientX - startX.current;
+    const dy = e.touches[0].clientY - startY.current;
+
+    if (direction.current === 'none') {
+      if (Math.abs(dx) > DIRECTION_LOCK_PX || Math.abs(dy) > DIRECTION_LOCK_PX) {
+        direction.current = Math.abs(dx) > Math.abs(dy) ? 'horizontal' : 'vertical';
+      }
+      return;
+    }
+
+    if (direction.current === 'vertical') return;
+    setOffset(Math.min(0, Math.max(-DELETE_WIDTH, currentOffset.current + dx)));
+  }, [onDelete, swiping]);
+
+  const onTouchEnd = useCallback(() => {
+    if (!swiping) return;
+    setSwiping(false);
+    if (direction.current === 'vertical') return;
+    setOffset(offset < -SWIPE_THRESHOLD ? -DELETE_WIDTH : 0);
+  }, [offset, swiping]);
+
+  const handleDelete = useCallback(() => {
+    if (!onDelete) return;
+    onDelete();
+    setOffset(0);
+    direction.current = 'none';
+  }, [onDelete]);
+
+  return (
+    <div className="relative overflow-hidden">
+      {onDelete && offset < 0 && (
+        <button
+          type="button"
+          onClick={handleDelete}
+          className="absolute right-0 top-0 bottom-0 flex items-center justify-center bg-negative text-text-highlight cursor-pointer"
+          style={{ width: DELETE_WIDTH }}
+        >
+          <IcTrash width={18} height={18} />
+        </button>
+      )}
+      <div
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+        onTouchCancel={onTouchEnd}
+        style={{
+          transform: `translateX(${offset}px)`,
+          transition: swiping ? 'none' : 'transform 200ms ease',
+        }}
+      >
+        {children}
+      </div>
     </div>
   );
 }
@@ -38,8 +203,8 @@ export default function WorkoutEditor() {
   const [title, setTitle] = useState("");
   const [difficulty, setDifficulty] = useState<Workout["difficulty"]>("beginner");
   const [target, setTarget] = useState("");
-  const [estimatedMinutes, setEstimatedMinutes] = useState(30);
-  const [exercises, setExercises] = useState<Exercise[]>([emptyExercise()]);
+  const [estimatedMinutesInput, setEstimatedMinutesInput] = useState("30");
+  const [exercises, setExercises] = useState<ExerciseDraft[]>([emptyExerciseDraft()]);
 
   useEffect(() => {
     if (id) {
@@ -48,15 +213,15 @@ export default function WorkoutEditor() {
         setTitle(existing.title);
         setDifficulty(existing.difficulty);
         setTarget(existing.target);
-        setEstimatedMinutes(existing.estimatedMinutes);
-        setExercises(existing.exercises.map((e) => ({ ...e })));
+        setEstimatedMinutesInput(String(existing.estimatedMinutes));
+        setExercises(existing.exercises.map(toExerciseDraft));
       } else {
         navigate("/");
       }
     }
   }, [id, allWorkouts, navigate]);
 
-  const updateExercise = (index: number, field: keyof Exercise, value: string | number | null) => {
+  const updateExercise = (index: number, field: keyof ExerciseDraft, value: string) => {
     setExercises((prev) =>
       prev.map((ex, i) => (i === index ? { ...ex, [field]: value } : ex))
     );
@@ -67,9 +232,17 @@ export default function WorkoutEditor() {
       prev.map((ex, i) => {
         if (i !== index) return ex;
         if (isTimed) {
-          return { ...ex, reps: null, durationSeconds: 30 };
+          return {
+            ...ex,
+            mode: "timed",
+            durationSeconds: ex.durationSeconds.trim() === "" ? "30" : ex.durationSeconds,
+          };
         }
-        return { ...ex, reps: 10, durationSeconds: null };
+        return {
+          ...ex,
+          mode: "reps",
+          reps: ex.reps.trim() === "" ? "10" : ex.reps,
+        };
       })
     );
   };
@@ -79,7 +252,7 @@ export default function WorkoutEditor() {
   };
 
   const addExercise = () => {
-    setExercises((prev) => [...prev, emptyExercise()]);
+    setExercises((prev) => [...prev, emptyExerciseDraft()]);
   };
 
   const handleSave = () => {
@@ -92,8 +265,8 @@ export default function WorkoutEditor() {
       title: title.trim(),
       difficulty,
       target: target.trim() || "General",
-      estimatedMinutes,
-      exercises: validExercises,
+      estimatedMinutes: parsePositiveInt(estimatedMinutesInput, 1),
+      exercises: validExercises.map(toExercise),
     };
 
     if (isEditing) {
@@ -110,10 +283,10 @@ export default function WorkoutEditor() {
   });
 
   return (
-    <div className="px-3 pt-4 pb-8">
+    <div className="px-3 pt-4 pb-0">
       {/* Workout Details */}
       <SectionLabel>{t('editor.workout')}</SectionLabel>
-      <Card className="mb-4">
+      <Card className="mb-4" padding="none">
         <FieldRow label={t('editor.name')}>
           <Input
             placeholder={t('editor.workoutName')}
@@ -121,17 +294,33 @@ export default function WorkoutEditor() {
             onChange={(e) => setTitle(e.target.value)}
           />
         </FieldRow>
-        <FieldRow label={t('editor.difficulty')}>
-          <Select
-            options={[
-              { label: t('editor.beginner'), value: "beginner" },
-              { label: t('editor.intermediate'), value: "intermediate" },
-              { label: t('editor.advanced'), value: "advanced" },
-            ]}
-            value={difficulty}
-            onValueChange={(val) => setDifficulty(val as Workout["difficulty"])}
-          />
-        </FieldRow>
+        <div className="grid grid-cols-2 gap-2 border-b border-border px-3 py-3">
+          <div>
+            <span className="text-[11px] tracking-[-0.11px] text-text-dim font-normal">{t('editor.difficulty')}</span>
+            <div className="mt-1">
+              <Select
+                options={[
+                  { label: t('editor.beginner'), value: "beginner" },
+                  { label: t('editor.intermediate'), value: "intermediate" },
+                  { label: t('editor.advanced'), value: "advanced" },
+                ]}
+                value={difficulty}
+                onValueChange={(val) => setDifficulty(val as Workout["difficulty"])}
+              />
+            </div>
+          </div>
+          <div>
+            <span className="text-[11px] tracking-[-0.11px] text-text-dim font-normal">{t('editor.estMinutes')}</span>
+            <div className="mt-1">
+              <Input
+                type="number"
+                min={1}
+                value={estimatedMinutesInput}
+                onChange={(e) => setEstimatedMinutesInput(e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
         <FieldRow label={t('editor.targetMuscles')}>
           <Input
             placeholder={t('editor.targetPlaceholder')}
@@ -139,121 +328,121 @@ export default function WorkoutEditor() {
             onChange={(e) => setTarget(e.target.value)}
           />
         </FieldRow>
-        <FieldRow label={t('editor.estMinutes')}>
-          <Input
-            type="number"
-            min={1}
-            value={estimatedMinutes}
-            onChange={(e) => setEstimatedMinutes(Number(e.target.value) || 1)}
-          />
-        </FieldRow>
       </Card>
 
       {/* Exercises */}
       <SectionLabel>{t('editor.exercises')}</SectionLabel>
-      <Card className="mb-4">
+      <Card className="mb-4" padding="none">
         {exercises.map((ex, i) => {
-          const isTimed = ex.durationSeconds !== null;
+          const isTimed = ex.mode === "timed";
           return (
-            <div key={i} className="py-3 border-b border-border last:border-b-0">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[11px] tracking-[-0.11px] text-text-dim font-normal">{t('editor.exercise')} {i + 1}</span>
-                {exercises.length > 1 && (
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => removeExercise(i)}
-                  >
-                    <IcTrash width={16} height={16} />
-                  </Button>
-                )}
-              </div>
-              <div className="space-y-2">
-                <div>
-                  <span className="text-[11px] tracking-[-0.11px] text-text-dim font-normal">{t('editor.name')}</span>
-                  <Input
-                    className="mt-1"
-                    placeholder={t('editor.exerciseName')}
-                    value={ex.name}
-                    onChange={(e) => updateExercise(i, "name", e.target.value)}
-                  />
+            <div key={i}>
+              {i > 0 && <div className="mx-3 h-[1px] bg-border" />}
+              <SwipeDeleteCard onDelete={exercises.length > 1 ? () => removeExercise(i) : undefined}>
+                <div className="px-3 py-3 bg-surface">
+                  <div className="space-y-2">
+                    <div>
+                      <span className="text-[11px] tracking-[-0.11px] text-text-dim font-normal">{t('editor.name')}</span>
+                      <div className="mt-1">
+                        <Input
+                          placeholder={t('editor.exerciseName')}
+                          value={ex.name}
+                          onChange={(e) => updateExercise(i, "name", e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div>
+                        <span className="text-[11px] tracking-[-0.11px] text-text-dim font-normal">{t('editor.sets')}</span>
+                        <Input
+                          className="mt-1"
+                          type="number"
+                          min={1}
+                          value={ex.sets}
+                          onChange={(e) => updateExercise(i, "sets", e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <span className="text-[11px] tracking-[-0.11px] text-text-dim font-normal">
+                          {isTimed ? t('editor.secs') : t('editor.reps')}
+                        </span>
+                        <Input
+                          className="mt-1"
+                          type="number"
+                          min={1}
+                          value={isTimed ? ex.durationSeconds : ex.reps}
+                          onChange={(e) => {
+                            if (isTimed) {
+                              updateExercise(i, "durationSeconds", e.target.value);
+                            } else {
+                              updateExercise(i, "reps", e.target.value);
+                            }
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <span className="text-[11px] tracking-[-0.11px] text-text-dim font-normal">{t('editor.kg')}</span>
+                        <Input
+                          className="mt-1"
+                          type="number"
+                          min={0}
+                          step="0.5"
+                          value={ex.weightKg}
+                          onChange={(e) => updateExercise(i, "weightKg", e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <span className="text-[11px] tracking-[-0.11px] text-text-dim font-normal">{t('editor.restS')}</span>
+                        <Input
+                          className="mt-1"
+                          type="number"
+                          min={0}
+                          value={ex.restSeconds}
+                          onChange={(e) => updateExercise(i, "restSeconds", e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <span className="text-[11px] tracking-[-0.11px] text-text-dim font-normal">{t('editor.type')}</span>
+                        <Select
+                          className="mt-1"
+                          options={[
+                            { label: t('editor.reps'), value: "reps" },
+                            { label: t('editor.timed'), value: "timed" },
+                          ]}
+                          value={isTimed ? "timed" : "reps"}
+                          onValueChange={(val) => toggleExerciseType(i, val === "timed")}
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="grid grid-cols-4 gap-2">
-                  <div>
-                    <span className="text-[11px] tracking-[-0.11px] text-text-dim font-normal">{t('editor.sets')}</span>
-                    <Input
-                      className="mt-1"
-                      type="number"
-                      min={1}
-                      value={ex.sets}
-                      onChange={(e) => updateExercise(i, "sets", Number(e.target.value) || 1)}
-                    />
-                  </div>
-                  <div>
-                    <span className="text-[11px] tracking-[-0.11px] text-text-dim font-normal">
-                      {isTimed ? t('editor.secs') : t('editor.reps')}
-                    </span>
-                    <Input
-                      className="mt-1"
-                      type="number"
-                      min={1}
-                      value={isTimed ? (ex.durationSeconds ?? 30) : (ex.reps ?? 10)}
-                      onChange={(e) => {
-                        const val = Number(e.target.value) || 1;
-                        if (isTimed) {
-                          updateExercise(i, "durationSeconds", val);
-                        } else {
-                          updateExercise(i, "reps", val);
-                        }
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <span className="text-[11px] tracking-[-0.11px] text-text-dim font-normal">{t('editor.restS')}</span>
-                    <Input
-                      className="mt-1"
-                      type="number"
-                      min={0}
-                      value={ex.restSeconds}
-                      onChange={(e) => updateExercise(i, "restSeconds", Number(e.target.value) || 0)}
-                    />
-                  </div>
-                  <div>
-                    <span className="text-[11px] tracking-[-0.11px] text-text-dim font-normal">{t('editor.type')}</span>
-                    <Select
-                      className="mt-1"
-                      options={[
-                        { label: t('editor.reps'), value: "reps" },
-                        { label: t('editor.timed'), value: "timed" },
-                      ]}
-                      value={isTimed ? "timed" : "reps"}
-                      onValueChange={(val) => toggleExerciseType(i, val === "timed")}
-                    />
-                  </div>
-                </div>
-              </div>
+              </SwipeDeleteCard>
             </div>
           );
         })}
-        <div className="py-3">
+        <div className="px-3 py-3">
           <Button
-            size="sm"
             variant="ghost"
-            className="w-full"
+            className="w-full justify-center gap-2 bg-text text-text-highlight hover:bg-text/90 hover:text-text-highlight"
             onClick={addExercise}
           >
+            <IcEditAdd width={16} height={16} />
             {t('editor.addExercise')}
           </Button>
         </div>
       </Card>
 
       {/* Bottom Buttons */}
-      <div className="flex items-center justify-between gap-3 pt-2">
-        <Button variant="ghost" onClick={() => navigate("/")}>{t('editor.cancel')}</Button>
-        <Button onClick={handleSave} disabled={!title.trim()}>
-          {isEditing ? t('editor.saveChanges') : t('editor.createWorkout')}
-        </Button>
-      </div>
+      <BottomActionBar className="-mx-3 mt-4">
+        <div className="grid grid-cols-2 gap-3">
+          <Button variant="secondary" className="w-full" onClick={() => navigate("/")}>{t('editor.cancel')}</Button>
+          <Button className="w-full" onClick={handleSave} disabled={!title.trim()}>
+            {isEditing ? t('editor.saveChanges') : t('editor.createWorkout')}
+          </Button>
+        </div>
+      </BottomActionBar>
     </div>
   );
 }

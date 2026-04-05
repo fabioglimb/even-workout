@@ -50,6 +50,69 @@ const translations: Record<string, Record<AppLanguage, string>> = {
     pt: '+ Novo', ja: '+ 新規', zh: '+ 新建', ko: '+ 새로', ru: '+ Новая',
   },
 
+  'nav.training': {
+    en: 'Training', it: 'Allenamento', es: 'Training', fr: 'Training', de: 'Training',
+    pt: 'Training', ja: 'Training', zh: 'Training', ko: 'Training', ru: 'Training',
+  },
+  'nav.workouts': {
+    en: 'Workouts', it: 'Allenamenti', es: 'Workouts', fr: 'Workouts', de: 'Workouts',
+    pt: 'Workouts', ja: 'Workouts', zh: 'Workouts', ko: 'Workouts', ru: 'Workouts',
+  },
+  'nav.history': {
+    en: 'History', it: 'Cronologia', es: 'History', fr: 'History', de: 'History',
+    pt: 'History', ja: 'History', zh: 'History', ko: 'History', ru: 'History',
+  },
+
+  // ── Calendar ──
+  'calendar.title': {
+    en: 'Calendar', it: 'Calendario', es: 'Calendar', fr: 'Calendar', de: 'Calendar',
+    pt: 'Calendar', ja: 'Calendar', zh: 'Calendar', ko: 'Calendar', ru: 'Calendar',
+  },
+  'calendar.forDate': {
+    en: 'Plan for', it: 'Piano per', es: 'Plan for', fr: 'Plan for', de: 'Plan for',
+    pt: 'Plan for', ja: 'Plan for', zh: 'Plan for', ko: 'Plan for', ru: 'Plan for',
+  },
+  'calendar.workout': {
+    en: 'Workout', it: 'Allenamento', es: 'Workout', fr: 'Workout', de: 'Workout',
+    pt: 'Workout', ja: 'Workout', zh: 'Workout', ko: 'Workout', ru: 'Workout',
+  },
+  'calendar.schedule': {
+    en: 'Schedule', it: 'Programma', es: 'Schedule', fr: 'Schedule', de: 'Schedule',
+    pt: 'Schedule', ja: 'Schedule', zh: 'Schedule', ko: 'Schedule', ru: 'Schedule',
+  },
+  'calendar.time': {
+    en: 'Time', it: 'Ora', es: 'Time', fr: 'Time', de: 'Time',
+    pt: 'Time', ja: 'Time', zh: 'Time', ko: 'Time', ru: 'Time',
+  },
+  'calendar.pickTime': {
+    en: 'Pick Time', it: 'Scegli orario', es: 'Pick Time', fr: 'Pick Time', de: 'Pick Time',
+    pt: 'Pick Time', ja: 'Pick Time', zh: 'Pick Time', ko: 'Pick Time', ru: 'Pick Time',
+  },
+  'calendar.emptyDay': {
+    en: 'No workouts scheduled for this day yet.', it: 'Nessun allenamento programmato per questo giorno.', es: 'No workouts scheduled for this day yet.', fr: 'No workouts scheduled for this day yet.', de: 'No workouts scheduled for this day yet.',
+    pt: 'No workouts scheduled for this day yet.', ja: 'No workouts scheduled for this day yet.', zh: 'No workouts scheduled for this day yet.', ko: 'No workouts scheduled for this day yet.', ru: 'No workouts scheduled for this day yet.',
+  },
+  'calendar.noWorkouts': {
+    en: 'No workouts yet', it: 'Nessun allenamento', es: 'No workouts yet', fr: 'No workouts yet', de: 'No workouts yet',
+    pt: 'No workouts yet', ja: 'No workouts yet', zh: 'No workouts yet', ko: 'No workouts yet', ru: 'No workouts yet',
+  },
+  'calendar.noWorkoutsDesc': {
+    en: 'Create a workout first, then assign it to days in your routine calendar.', it: 'Crea prima un allenamento, poi assegnalo ai giorni del tuo calendario.', es: 'Create a workout first, then assign it to days in your routine calendar.', fr: 'Create a workout first, then assign it to days in your routine calendar.', de: 'Create a workout first, then assign it to days in your routine calendar.',
+    pt: 'Create a workout first, then assign it to days in your routine calendar.', ja: 'Create a workout first, then assign it to days in your routine calendar.', zh: 'Create a workout first, then assign it to days in your routine calendar.', ko: 'Create a workout first, then assign it to days in your routine calendar.', ru: 'Create a workout first, then assign it to days in your routine calendar.',
+  },
+  'calendar.totalPlanned': {
+    en: 'Planned', it: 'Programmati', es: 'Planned', fr: 'Planned', de: 'Planned',
+    pt: 'Planned', ja: 'Planned', zh: 'Planned', ko: 'Planned', ru: 'Planned',
+  },
+  'calendar.thisWeek': {
+    en: 'This Week', it: 'Questa Settimana', es: 'This Week', fr: 'This Week', de: 'This Week',
+    pt: 'This Week', ja: 'This Week', zh: 'This Week', ko: 'This Week', ru: 'This Week',
+  },
+  'calendar.planned': {
+    en: 'planned', it: 'programmati', es: 'planned', fr: 'planned', de: 'planned',
+    pt: 'planned', ja: 'planned', zh: 'planned', ko: 'planned', ru: 'planned',
+  },
+
   // ── Workout Detail ──
   'detail.notFound': {
     en: 'Workout not found', it: 'Allenamento non trovato', es: 'Entrenamiento no encontrado', fr: 'Entraînement introuvable', de: 'Training nicht gefunden',
@@ -70,6 +133,10 @@ const translations: Record<string, Record<AppLanguage, string>> = {
   'detail.startWorkout': {
     en: 'Start Workout', it: 'Inizia Allenamento', es: 'Iniciar Entrenamiento', fr: 'Démarrer l\'Entraînement', de: 'Training starten',
     pt: 'Iniciar Treino', ja: 'ワークアウト開始', zh: '开始锻炼', ko: '운동 시작', ru: 'Начать тренировку',
+  },
+  'detail.schedule': {
+    en: 'Schedule', it: 'Programma', es: 'Schedule', fr: 'Schedule', de: 'Schedule',
+    pt: 'Schedule', ja: 'Schedule', zh: 'Schedule', ko: 'Schedule', ru: 'Schedule',
   },
   'detail.edit': {
     en: 'Edit', it: 'Modifica', es: 'Editar', fr: 'Modifier', de: 'Bearbeiten',
@@ -102,6 +169,10 @@ const translations: Record<string, Record<AppLanguage, string>> = {
   'detail.rest': {
     en: 'Rest', it: 'Pausa', es: 'Descanso', fr: 'Repos', de: 'Pause',
     pt: 'Descanso', ja: '休憩', zh: '休息', ko: '휴식', ru: 'Отдых',
+  },
+  'detail.kg': {
+    en: 'Kg', it: 'Kg', es: 'Kg', fr: 'Kg', de: 'Kg',
+    pt: 'Kg', ja: 'Kg', zh: 'Kg', ko: 'Kg', ru: 'Кг',
   },
 
   // ── Workout Editor ──
@@ -173,6 +244,10 @@ const translations: Record<string, Record<AppLanguage, string>> = {
     en: 'Reps', it: 'Rip', es: 'Reps', fr: 'Reps', de: 'Wdh',
     pt: 'Reps', ja: '回数', zh: '次数', ko: '횟수', ru: 'Повт',
   },
+  'editor.kg': {
+    en: 'Kg', it: 'Kg', es: 'Kg', fr: 'Kg', de: 'Kg',
+    pt: 'Kg', ja: 'Kg', zh: 'Kg', ko: 'Kg', ru: 'Кг',
+  },
   'editor.secs': {
     en: 'Secs', it: 'Sec', es: 'Seg', fr: 'Sec', de: 'Sek',
     pt: 'Seg', ja: '秒', zh: '秒', ko: '초', ru: 'Сек',
@@ -190,8 +265,8 @@ const translations: Record<string, Record<AppLanguage, string>> = {
     pt: 'Tempo', ja: '時間制', zh: '计时', ko: '시간제', ru: 'По времени',
   },
   'editor.addExercise': {
-    en: '+ Add Exercise', it: '+ Aggiungi Esercizio', es: '+ Añadir Ejercicio', fr: '+ Ajouter un Exercice', de: '+ Übung hinzufügen',
-    pt: '+ Adicionar Exercício', ja: '+ エクササイズ追加', zh: '+ 添加练习', ko: '+ 운동 추가', ru: '+ Добавить упражнение',
+    en: 'Add Exercise', it: 'Aggiungi Esercizio', es: 'Añadir Ejercicio', fr: 'Ajouter un Exercice', de: 'Übung hinzufügen',
+    pt: 'Adicionar Exercício', ja: 'エクササイズ追加', zh: '添加练习', ko: '운동 추가', ru: 'Добавить упражнение',
   },
   'editor.cancel': {
     en: 'Cancel', it: 'Annulla', es: 'Cancelar', fr: 'Annuler', de: 'Abbrechen',
@@ -210,6 +285,10 @@ const translations: Record<string, Record<AppLanguage, string>> = {
   'active.skipRest': {
     en: 'Skip Rest', it: 'Salta Pausa', es: 'Saltar Descanso', fr: 'Passer le Repos', de: 'Pause überspringen',
     pt: 'Pular Descanso', ja: '休憩をスキップ', zh: '跳过休息', ko: '휴식 건너뛰기', ru: 'Пропустить отдых',
+  },
+  'active.title': {
+    en: 'Active Workout', it: 'Allenamento Attivo', es: 'Active Workout', fr: 'Active Workout', de: 'Active Workout',
+    pt: 'Active Workout', ja: 'Active Workout', zh: 'Active Workout', ko: 'Active Workout', ru: 'Active Workout',
   },
   'active.allSetsComplete': {
     en: 'All Sets Complete', it: 'Tutte le Serie Complete', es: 'Todas las Series Completadas', fr: 'Toutes les Séries Terminées', de: 'Alle Sätze abgeschlossen',
@@ -334,6 +413,10 @@ const translations: Record<string, Record<AppLanguage, string>> = {
   'glass.reps': {
     en: 'reps', it: 'rip', es: 'reps', fr: 'reps', de: 'Wdh',
     pt: 'reps', ja: '回', zh: '次', ko: '회', ru: 'повт',
+  },
+  'glass.timer': {
+    en: 'Timer', it: 'Timer', es: 'Temporizador', fr: 'Minuteur', de: 'Timer',
+    pt: 'Temporizador', ja: 'タイマー', zh: '计时器', ko: '타이머', ru: 'Таймер',
   },
   'glass.rest': {
     en: 'REST', it: 'PAUSA', es: 'DESCANSO', fr: 'REPOS', de: 'PAUSE',

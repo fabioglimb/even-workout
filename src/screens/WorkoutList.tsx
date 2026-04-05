@@ -2,6 +2,7 @@ import { useNavigate } from "react-router";
 import { useWorkoutContext } from "../contexts/WorkoutContext";
 import { WorkoutCard } from "../components/shared/WorkoutCard";
 import { Button, useDrawerHeader } from "even-toolkit/web";
+import { IcEditAdd } from "even-toolkit/web/icons/svg-icons";
 import { useTranslation } from "../hooks/useTranslation";
 
 export default function WorkoutList() {
@@ -12,7 +13,9 @@ export default function WorkoutList() {
   useDrawerHeader({
     title: 'ER Workout',
     right: (
-      <Button size="sm" onClick={() => navigate("/editor")}>{t('workoutList.new')}</Button>
+      <Button size="sm" onClick={() => navigate("/editor")} aria-label={t('editor.newWorkout')}>
+        <IcEditAdd width={16} height={16} />
+      </Button>
     ),
   });
 

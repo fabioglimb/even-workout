@@ -1,13 +1,14 @@
-import type { Workout, SessionRecord } from "../types/workout";
+import type { Workout, SessionRecord, WorkoutScheduleEntry } from "../types/workout";
 import type { AppLanguage } from "../utils/i18n";
 import { storageGet, storageSet, storageRemove } from "./bridge-storage";
 
 const CUSTOM_WORKOUTS_KEY = "even-workout:custom-workouts";
 const SESSION_HISTORY_KEY = "even-workout:session-history";
+const WORKOUT_SCHEDULE_KEY = "even-workout:workout-schedule";
 const SETTINGS_KEY = "even-workout:settings";
 
 /** All storage keys — kept for reference */
-export const ALL_STORAGE_KEYS = [CUSTOM_WORKOUTS_KEY, SESSION_HISTORY_KEY, SETTINGS_KEY];
+export const ALL_STORAGE_KEYS = [CUSTOM_WORKOUTS_KEY, SESSION_HISTORY_KEY, WORKOUT_SCHEDULE_KEY, SETTINGS_KEY];
 
 // ── Language ──
 
@@ -51,4 +52,14 @@ export async function removeSessionById(id: string): Promise<void> {
 
 export async function clearSessionHistory(): Promise<void> {
   await storageRemove(SESSION_HISTORY_KEY);
+}
+
+// ── Workout Calendar ──
+
+export async function loadWorkoutSchedule(): Promise<WorkoutScheduleEntry[]> {
+  return storageGet<WorkoutScheduleEntry[]>(WORKOUT_SCHEDULE_KEY, []);
+}
+
+export async function saveWorkoutSchedule(entries: WorkoutScheduleEntry[]): Promise<void> {
+  await storageSet(WORKOUT_SCHEDULE_KEY, entries);
 }
