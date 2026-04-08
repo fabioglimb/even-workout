@@ -1,10 +1,8 @@
 import { useCallback, useMemo, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 import { useGlasses } from 'even-toolkit/useGlasses';
-import { useFlashPhase } from 'even-toolkit/useFlashPhase';
-import { createScreenMapper, createIdExtractor, getHomeTiles } from 'even-toolkit/glass-router';
+import { createScreenMapper, createIdExtractor } from 'even-toolkit/glass-router';
 import { useWorkoutContext } from '../contexts/WorkoutContext';
-import { workoutSplash } from './splash';
 import { toDisplayData, toSplitData, onGlassAction, type WorkoutSnapshot } from './selectors';
 import type { WorkoutActions } from './shared';
 
@@ -18,8 +16,6 @@ const deriveScreen = createScreenMapper([
 ], 'workout-list');
 
 const extractWorkoutId = createIdExtractor(/^\/workout\/([^/]+)/);
-
-const homeTiles = getHomeTiles(workoutSplash);
 
 export function WorkoutGlasses() {
   const {
@@ -35,8 +31,6 @@ export function WorkoutGlasses() {
   } = useWorkoutContext();
   const navigate = useNavigate();
   const location = useLocation();
-  const isActive = deriveScreen(location.pathname) === 'active';
-  const flashPhase = useFlashPhase(isActive);
 
   // Derive selected workout from URL (like kitchen), not from activeState
   const currentWorkoutId = extractWorkoutId(location.pathname);
@@ -53,7 +47,7 @@ export function WorkoutGlasses() {
     selectedWorkout: urlWorkout ?? selectedWorkout,
     allWorkouts,
     sessionHistory,
-    flashPhase,
+    flashPhase: false,
     language,
   };
   snapshotRef.current = snapshot;
@@ -84,13 +78,11 @@ export function WorkoutGlasses() {
     onGlassAction: handleGlassAction,
     deriveScreen,
     appName: 'ER WORKOUT',
-    splash: workoutSplash,
     getPageMode: (screen) => {
       if (screen === 'workout-list') return 'home';
       if (screen === 'workout-detail' || screen === 'active') return 'split';
       return 'text';
     },
-    homeImageTiles: homeTiles,
   });
 
   return null;
