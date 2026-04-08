@@ -10,9 +10,9 @@ import { t } from '../../utils/i18n';
 import type { WorkoutSnapshot, WorkoutActions } from '../shared';
 import { buildPaneText, buildSplitHeader, wordWrap } from '../shared';
 
-const DETAIL_LEFT_WIDTH = 26;
-const DETAIL_RIGHT_WIDTH = 14;
-const DETAIL_LAYOUT = { leftWidth: 368 };
+const DETAIL_LEFT_WIDTH = 20;
+const DETAIL_RIGHT_WIDTH = 22;
+const DETAIL_LAYOUT = { leftWidth: 279 };
 
 function workoutDetailLines(workout: Workout, lang: AppLanguage): string[] {
   const items: string[] = [];
@@ -52,18 +52,18 @@ function workoutSummaryLines(workout: Workout): string[] {
     if (`${current} ${word}`.length <= limit) {
       current = `${current} ${word}`;
     } else {
-      targetLines.push(targetLines.length === 0 ? `■ ${current}` : current);
+      targetLines.push(targetLines.length === 0 ? `◆ ${current}` : current);
       current = word;
     }
   }
-  if (current) targetLines.push(targetLines.length === 0 ? `■ ${current}` : current);
+  if (current) targetLines.push(targetLines.length === 0 ? `◆ ${current}` : current);
 
   return [
     ...targetLines,
-    `■ ${diff}`,
-    `■ ${workout.estimatedMinutes} min`,
-    `■ ${workout.exercises.length} ex`,
-    `■ ${totalSets} sets`,
+    `◆ ${diff}`,
+    `◆ ${workout.estimatedMinutes} min`,
+    `◆ ${workout.exercises.length} ex`,
+    `◆ ${totalSets} sets`,
   ];
 }
 

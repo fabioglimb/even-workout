@@ -1,3 +1,4 @@
+import { line } from 'even-toolkit/types';
 import type { GlassScreen } from 'even-toolkit/glass-screen-router';
 import { moveHighlight } from 'even-toolkit/glass-nav';
 import { buildScrollableList } from 'even-toolkit/glass-display-builders';
@@ -6,17 +7,18 @@ import type { WorkoutSnapshot, WorkoutActions } from '../shared';
 
 export const workoutListScreen: GlassScreen<WorkoutSnapshot, WorkoutActions> = {
   display(snapshot, nav) {
-    return {
-      lines: buildScrollableList({
-        items: snapshot.allWorkouts,
-        highlightedIndex: nav.highlightedIndex,
-        maxVisible: 6,
-        formatter: (w) => {
-          const diff = w.difficulty.slice(0, 3).toUpperCase();
-          return truncate(`${w.title}  [${diff}]`, 54);
-        },
-      }),
-    };
+    const header = line('◆  E R   W O R K O U T  ◆', 'normal');
+    const sep = line('', 'separator');
+    const menuLines = buildScrollableList({
+      items: snapshot.allWorkouts,
+      highlightedIndex: nav.highlightedIndex,
+      maxVisible: 7,
+      formatter: (w) => {
+        const diff = w.difficulty.slice(0, 3).toUpperCase();
+        return truncate(`${w.title}  [${diff}]`, 54);
+      },
+    });
+    return { lines: [header, sep, ...menuLines] };
   },
 
   action(action, nav, snapshot, ctx) {

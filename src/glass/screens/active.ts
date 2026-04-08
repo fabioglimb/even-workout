@@ -53,10 +53,10 @@ function buildExerciseLeftLines(state: ActiveWorkoutState, workout: Workout, lan
   if (!exercise) return [];
 
   return withSpacerRows([
-    `■ ${t('glass.set', lang)} ${state.currentSet}/${exercise.sets}`,
-    `■ ${formatExercisePrescription(exercise, lang)}`,
-    exercise.weightKg ? `■ ${exercise.weightKg}kg` : '',
-    `■ REST ${exercise.restSeconds}s`,
+    `• ${t('glass.set', lang)} ${state.currentSet}/${exercise.sets}`,
+    `• ${formatExercisePrescription(exercise, lang)}`,
+    exercise.weightKg ? `• ${exercise.weightKg}kg` : '',
+    `• REST ${exercise.restSeconds}s`,
   ].filter(Boolean));
 }
 
@@ -66,9 +66,9 @@ function buildExerciseRightLines(state: ActiveWorkoutState, workout: Workout, la
   if (!exercise) return [];
 
   return withSpacerRows([
-    `■ ${t('glass.progress', lang)} ${state.completedSets}/${state.totalSets}`,
-    `■ EX ${state.exerciseIndex + 1}/${workout.exercises.length}`,
-    nextExercise ? `■ NEXT ${nextExercise.name}` : `■ LAST ${exercise.name}`,
+    `◆ ${t('glass.progress', lang)} ${state.completedSets}/${state.totalSets}`,
+    `◆ EX ${state.exerciseIndex + 1}/${workout.exercises.length}`,
+    nextExercise ? `▶ NEXT ${nextExercise.name}` : `▶ LAST ${exercise.name}`,
   ]);
 }
 
@@ -81,9 +81,9 @@ function buildRestLeftLines(state: ActiveWorkoutState, workout: Workout, lang: A
   const nextTotal = nextExercise?.sets ?? exercise.sets;
 
   return withSpacerRows([
-    `■ ${t('glass.progress', lang)} ${state.completedSets}/${state.totalSets}`,
-    `■ ${t('glass.set', lang)} ${nextSet}/${nextTotal}`,
-    `■ ${exercise.restSeconds}s`,
+    `• ${t('glass.progress', lang)} ${state.completedSets}/${state.totalSets}`,
+    `• ${t('glass.set', lang)} ${nextSet}/${nextTotal}`,
+    `• ${exercise.restSeconds}s`,
   ]);
 }
 
@@ -93,7 +93,7 @@ function buildRestRightLines(state: ActiveWorkoutState, workout: Workout, lang: 
   const nextExercise = isLastSet ? workout.exercises[state.exerciseIndex + 1] ?? null : exercise;
   const restTotal = exercise?.restSeconds ?? 30;
   return [
-    `■ ${t('glass.rest', lang)}`,
+    `◆ ${t('glass.rest', lang)}`,
     '',
     ...renderTimerLines({
       running: true,
@@ -101,7 +101,7 @@ function buildRestRightLines(state: ActiveWorkoutState, workout: Workout, lang: 
       total: restTotal,
     }, 14, REST_RIGHT_WIDTH),
     '',
-    nextExercise ? `■ NEXT ${nextExercise.name}` : '',
+    nextExercise ? `▶ NEXT ${nextExercise.name}` : '',
   ];
 }
 
@@ -123,10 +123,10 @@ export function buildActiveSplit(snapshot: WorkoutSnapshot, nav: { highlightedIn
         t('glass.greatWork', lang),
       ], ACTIVE_LEFT_WIDTH, 0),
       right: buildPaneText([
-        `■ ${t('glass.duration', lang).toUpperCase()}`,
+        `◆ ${t('glass.duration', lang).toUpperCase()}`,
         formatDuration((state.finishedAt ?? Date.now()) - state.startedAt),
         '',
-        `■ ${state.completedSets}/${state.totalSets}`,
+        `◆ ${state.completedSets}/${state.totalSets}`,
         t('glass.sets', lang),
       ], ACTIVE_RIGHT_WIDTH, 0),
       layout: ACTIVE_LAYOUT,
