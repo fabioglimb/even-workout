@@ -52,18 +52,18 @@ function workoutSummaryLines(workout: Workout): string[] {
     if (`${current} ${word}`.length <= limit) {
       current = `${current} ${word}`;
     } else {
-      targetLines.push(targetLines.length === 0 ? `• ${current}` : current);
+      targetLines.push(targetLines.length === 0 ? `■ ${current}` : current);
       current = word;
     }
   }
-  if (current) targetLines.push(targetLines.length === 0 ? `• ${current}` : current);
+  if (current) targetLines.push(targetLines.length === 0 ? `■ ${current}` : current);
 
   return [
     ...targetLines,
-    `• ${diff}`,
-    `• ${workout.estimatedMinutes} min`,
-    `• ${workout.exercises.length} ex`,
-    `• ${totalSets} sets`,
+    `■ ${diff}`,
+    `■ ${workout.estimatedMinutes} min`,
+    `■ ${workout.exercises.length} ex`,
+    `■ ${totalSets} sets`,
   ];
 }
 
