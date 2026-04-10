@@ -28,6 +28,7 @@ export function WorkoutGlasses() {
     skipRest,
     finishWorkout,
     language,
+    favoriteIds,
   } = useWorkoutContext();
   const navigate = useNavigate();
   const location = useLocation();
@@ -49,6 +50,7 @@ export function WorkoutGlasses() {
     sessionHistory,
     flashPhase: false,
     language,
+    favoriteIds,
   };
   snapshotRef.current = snapshot;
 

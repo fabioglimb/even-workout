@@ -12,9 +12,9 @@ import { t } from '../../utils/i18n';
 import type { WorkoutSnapshot, WorkoutActions } from '../shared';
 import { buildPaneText, buildSplitHeader, formatDuration } from '../shared';
 
-const ACTIVE_LEFT_WIDTH = 13;
-const ACTIVE_RIGHT_WIDTH = 24;
-const ACTIVE_LAYOUT = { leftWidth: 208 };
+const ACTIVE_LEFT_WIDTH = 17;
+const ACTIVE_RIGHT_WIDTH = 30;
+const ACTIVE_LAYOUT = { leftWidth: 240 };
 const REST_LEFT_WIDTH = ACTIVE_LEFT_WIDTH;
 const REST_RIGHT_WIDTH = ACTIVE_RIGHT_WIDTH;
 const REST_LAYOUT = ACTIVE_LAYOUT;
@@ -107,7 +107,7 @@ function buildRestRightLines(state: ActiveWorkoutState, workout: Workout, lang: 
 
 export function buildActiveSplit(snapshot: WorkoutSnapshot, nav: { highlightedIndex: number }): SplitData {
   if (!snapshot.activeState || !snapshot.selectedWorkout) {
-    return { header: buildSplitHeader('Workout'), left: '', right: '' };
+    return { header: buildSplitHeader('Workout'), panes: ['', ''] };
   }
 
   const state = snapshot.activeState;
@@ -117,18 +117,20 @@ export function buildActiveSplit(snapshot: WorkoutSnapshot, nav: { highlightedIn
   if (state.completedSets >= state.totalSets) {
     return {
       header: buildSplitHeader(t('glass.complete', lang), buildStaticActionBar([t('glass.finishWorkout', lang)], 0)),
-      left: buildPaneText([
-        t('glass.allSetsComplete', lang),
-        '',
-        t('glass.greatWork', lang),
-      ], ACTIVE_LEFT_WIDTH, 0),
-      right: buildPaneText([
-        `◆ ${t('glass.duration', lang).toUpperCase()}`,
-        formatDuration((state.finishedAt ?? Date.now()) - state.startedAt),
-        '',
-        `◆ ${state.completedSets}/${state.totalSets}`,
-        t('glass.sets', lang),
-      ], ACTIVE_RIGHT_WIDTH, 0),
+      panes: [
+        buildPaneText([
+          t('glass.allSetsComplete', lang),
+          '',
+          t('glass.greatWork', lang),
+        ], ACTIVE_LEFT_WIDTH, 0),
+        buildPaneText([
+          `◆ ${t('glass.duration', lang).toUpperCase()}`,
+          formatDuration((state.finishedAt ?? Date.now()) - state.startedAt),
+          '',
+          `◆ ${state.completedSets}/${state.totalSets}`,
+          t('glass.sets', lang),
+        ], ACTIVE_RIGHT_WIDTH, 0),
+      ],
       layout: ACTIVE_LAYOUT,
     };
   }
@@ -142,16 +144,20 @@ export function buildActiveSplit(snapshot: WorkoutSnapshot, nav: { highlightedIn
   if (state.phase === 'rest') {
     return {
       header,
-      left: buildPaneText(buildRestLeftLines(state, workout, lang), REST_LEFT_WIDTH, 0),
-      right: buildPaneText(buildRestRightLines(state, workout, lang), REST_RIGHT_WIDTH, 0),
+      panes: [
+        buildPaneText(buildRestLeftLines(state, workout, lang), REST_LEFT_WIDTH, 0),
+        buildPaneText(buildRestRightLines(state, workout, lang), REST_RIGHT_WIDTH, 0),
+      ],
       layout: REST_LAYOUT,
     };
   }
 
   return {
     header,
-    left: buildPaneText(buildExerciseLeftLines(state, workout, lang), ACTIVE_LEFT_WIDTH, 0),
-    right: buildPaneText(buildExerciseRightLines(state, workout, lang), ACTIVE_RIGHT_WIDTH, 0),
+    panes: [
+      buildPaneText(buildExerciseLeftLines(state, workout, lang), ACTIVE_LEFT_WIDTH, 0),
+      buildPaneText(buildExerciseRightLines(state, workout, lang), ACTIVE_RIGHT_WIDTH, 0),
+    ],
     layout: ACTIVE_LAYOUT,
   };
 }

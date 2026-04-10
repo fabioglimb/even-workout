@@ -1,5 +1,7 @@
 # EvenWorkout
 
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-yellow?style=flat&logo=buy-me-a-coffee)](https://buymeacoffee.com/f3tch)
+
 A gym companion for **Even Realities G2 glasses**. Browse preset workouts or create your own, track sets, reps, and rest periods hands-free during training, and review your session history with stats.
 
 ![EvenWorkout Banner](docs/images/banner.png)
@@ -170,6 +172,12 @@ npm run build
 # Generate QR code for Even Hub testing
 npx @evenrealities/evenhub-cli qr --port 5173 --path / --ip <your-local-ip>
 ```
+
+## Support
+
+If you find this useful, consider supporting the project:
+
+[![Buy Me A Coffee](https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png)](https://buymeacoffee.com/f3tch)
 
 ## License
 

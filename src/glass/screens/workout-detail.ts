@@ -10,9 +10,9 @@ import { t } from '../../utils/i18n';
 import type { WorkoutSnapshot, WorkoutActions } from '../shared';
 import { buildPaneText, buildSplitHeader, wordWrap } from '../shared';
 
-const DETAIL_LEFT_WIDTH = 20;
-const DETAIL_RIGHT_WIDTH = 22;
-const DETAIL_LAYOUT = { leftWidth: 279 };
+const DETAIL_LEFT_WIDTH = 32;
+const DETAIL_RIGHT_WIDTH = 26;
+const DETAIL_LAYOUT = { leftWidth: 310 };
 
 function workoutDetailLines(workout: Workout, lang: AppLanguage): string[] {
   const items: string[] = [];
@@ -36,8 +36,15 @@ function workoutExerciseLines(workout: Workout, lang: AppLanguage): string[] {
   });
 }
 
+function difficultySpades(difficulty: string): string {
+  const d = difficulty.toLowerCase();
+  const label = d.charAt(0).toUpperCase() + d.slice(1);
+  if (d === 'easy' || d === 'beginner') return `${label} ♠`;
+  if (d === 'hard' || d === 'advanced') return `${label} ♠♠♠`;
+  return `${label} ♠♠`;
+}
+
 function workoutSummaryLines(workout: Workout): string[] {
-  const diff = workout.difficulty.slice(0, 3).toUpperCase();
   const totalSets = workout.exercises.reduce((sum, ex) => sum + ex.sets, 0);
   const targetWords = workout.target.split(/\s+/).filter(Boolean);
   const targetLines: string[] = [];
@@ -60,7 +67,7 @@ function workoutSummaryLines(workout: Workout): string[] {
 
   return [
     ...targetLines,
-    `◆ ${diff}`,
+    `◆ ${difficultySpades(workout.difficulty)}`,
     `◆ ${workout.estimatedMinutes} min`,
     `◆ ${workout.exercises.length} ex`,
     `◆ ${totalSets} sets`,
@@ -70,13 +77,15 @@ function workoutSummaryLines(workout: Workout): string[] {
 export function buildWorkoutDetailSplit(snapshot: WorkoutSnapshot, nav: { highlightedIndex: number }): SplitData {
   const workout = snapshot.selectedWorkout;
   if (!workout) {
-    return { header: buildSplitHeader('Workout'), left: '', right: '' };
+    return { header: buildSplitHeader('Workout'), panes: ['', ''] };
   }
 
   return {
     header: buildSplitHeader(workout.title, buildStaticActionBar([t('glass.start', snapshot.language)], 0)),
-    left: buildPaneText(workoutExerciseLines(workout, snapshot.language), DETAIL_LEFT_WIDTH, nav.highlightedIndex),
-    right: buildPaneText(workoutSummaryLines(workout), DETAIL_RIGHT_WIDTH, 0),
+    panes: [
+      buildPaneText(workoutExerciseLines(workout, snapshot.language), DETAIL_LEFT_WIDTH, nav.highlightedIndex),
+      buildPaneText(workoutSummaryLines(workout), DETAIL_RIGHT_WIDTH, 0),
+    ],
     layout: DETAIL_LAYOUT,
   };
 }

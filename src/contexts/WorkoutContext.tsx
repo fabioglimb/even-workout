@@ -22,6 +22,7 @@ import {
   loadWorkoutSchedule,
   saveWorkoutSchedule,
 } from "../data/persistence";
+import { storageGet, storageSet } from 'even-toolkit/storage';
 
 interface WorkoutContextValue {
   activeState: ActiveWorkoutState | null;
@@ -47,6 +48,8 @@ interface WorkoutContextValue {
   moveScheduledWorkout: (id: string, scheduledFor: string, scheduledTime?: string) => void;
   language: AppLanguage;
   setLanguage: (lang: AppLanguage) => void;
+  favoriteIds: string[];
+  toggleFavorite: (id: string) => void;
 }
 
 const WorkoutContext = createContext<WorkoutContextValue | null>(null);
@@ -57,6 +60,7 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
   const [sessionHistory, setSessionHistory] = useState<SessionRecord[]>([]);
   const [scheduleEntries, setScheduleEntries] = useState<WorkoutScheduleEntry[]>([]);
   const [language, setLanguageState] = useState<AppLanguage>('en');
+  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [loaded, setLoaded] = useState(false);
 
   // Keep a ref to the latest customWorkouts so sync callbacks (state updaters) can read it
@@ -65,11 +69,12 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     async function init() {
-      const [saved, history, lang, schedule] = await Promise.all([
+      const [saved, history, lang, schedule, favs] = await Promise.all([
         loadCustomWorkouts(),
         loadSessionHistory(),
         loadLanguage(),
         loadWorkoutSchedule(),
+        storageGet<string[]>('workout-favorites', []),
       ]);
 
       if (saved.length > 0) {
@@ -81,6 +86,7 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
       setSessionHistory(history);
       setScheduleEntries(schedule);
       setLanguageState(lang);
+      if (favs) setFavoriteIds(favs);
       setLoaded(true);
     }
     init();
@@ -89,6 +95,14 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
   const setLanguage = useCallback((lang: AppLanguage) => {
     setLanguageState(lang);
     saveLanguage(lang);
+  }, []);
+
+  const toggleFavorite = useCallback((id: string) => {
+    setFavoriteIds((prev) => {
+      const next = prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id];
+      storageSet('workout-favorites', next);
+      return next;
+    });
   }, []);
 
   const allWorkouts = customWorkouts;
@@ -347,6 +361,8 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
         moveScheduledWorkout,
         language,
         setLanguage,
+        favoriteIds,
+        toggleFavorite,
       }}
     >
       {children}

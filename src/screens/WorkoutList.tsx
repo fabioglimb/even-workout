@@ -7,7 +7,7 @@ import { useTranslation } from "../hooks/useTranslation";
 
 export default function WorkoutList() {
   const navigate = useNavigate();
-  const { allWorkouts, removeWorkout } = useWorkoutContext();
+  const { allWorkouts, removeWorkout, favoriteIds, toggleFavorite } = useWorkoutContext();
   const { t } = useTranslation();
 
   useDrawerHeader({
@@ -25,6 +25,8 @@ export default function WorkoutList() {
         <WorkoutCard
           key={workout.id}
           workout={workout}
+          isFavorite={favoriteIds.includes(workout.id)}
+          onToggleFavorite={() => toggleFavorite(workout.id)}
           onDelete={() => removeWorkout(workout.id)}
         />
       ))}

@@ -13,10 +13,12 @@ const SWIPE_THRESHOLD = 40;
 
 interface WorkoutCardProps {
   workout: Workout;
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
   onDelete?: () => void;
 }
 
-export function WorkoutCard({ workout, onDelete }: WorkoutCardProps) {
+export function WorkoutCard({ workout, isFavorite, onToggleFavorite, onDelete }: WorkoutCardProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [offset, setOffset] = useState(0);
@@ -84,7 +86,14 @@ export function WorkoutCard({ workout, onDelete }: WorkoutCardProps) {
           <div className="absolute right-4 top-1/2 -translate-y-1/2">
             <DifficultyBadge difficulty={workout.difficulty} />
           </div>
-          <h3 className="text-[17px] tracking-[-0.17px] text-text mb-2 pr-24">{workout.title}</h3>
+          <div className="flex items-center gap-2 mb-2 pr-24">
+            {onToggleFavorite && (
+              <button type="button" onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }} className="text-[17px] leading-none cursor-pointer shrink-0">
+                {isFavorite ? '★' : '☆'}
+              </button>
+            )}
+            <h3 className="text-[17px] tracking-[-0.17px] text-text">{workout.title}</h3>
+          </div>
           <p className="text-[13px] tracking-[-0.13px] text-text-dim mb-2 pr-24">
             {workout.target}
           </p>

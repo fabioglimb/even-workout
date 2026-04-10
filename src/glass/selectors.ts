@@ -28,6 +28,6 @@ export function toSplitData(snapshot: WorkoutSnapshot, nav: GlassNavState): Spli
     case 'active':
       return buildActiveSplit(snapshot, nav);
     default:
-      return { header: '', left: '', right: '' };
+      return { header: '', panes: ['', ''] };
   }
 }

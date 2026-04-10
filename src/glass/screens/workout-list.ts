@@ -9,13 +9,16 @@ export const workoutListScreen: GlassScreen<WorkoutSnapshot, WorkoutActions> = {
   display(snapshot, nav) {
     const header = line('◆  E R   W O R K O U T  ◆', 'normal');
     const sep = line('', 'separator');
+    const favSet = new Set(snapshot.favoriteIds);
+    const sorted = [...snapshot.allWorkouts].sort((a, b) => (favSet.has(a.id) ? 0 : 1) - (favSet.has(b.id) ? 0 : 1));
     const menuLines = buildScrollableList({
-      items: snapshot.allWorkouts,
+      items: sorted,
       highlightedIndex: nav.highlightedIndex,
       maxVisible: 7,
       formatter: (w) => {
         const diff = w.difficulty.slice(0, 3).toUpperCase();
-        return truncate(`${w.title}  [${diff}]`, 54);
+        const star = favSet.has(w.id) ? '★ ' : '';
+        return truncate(`${star}${w.title}  [${diff}]`, 54);
       },
     });
     return { lines: [header, sep, ...menuLines] };

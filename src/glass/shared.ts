@@ -10,6 +10,7 @@ export interface WorkoutSnapshot {
   sessionHistory: SessionRecord[];
   flashPhase: boolean;
   language: AppLanguage;
+  favoriteIds: string[];
 }
 
 export interface WorkoutActions {
