@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, type ReactNode, type TouchEvent as ReactTouchEvent } from "react";
 import { useParams, useNavigate } from "react-router";
 import { useWorkoutContext } from "../contexts/WorkoutContext";
-import { BottomActionBar, Button, Card, Input, Select, SegmentedControl, useDrawerHeader } from "even-toolkit/web";
+import { BottomActionBar, Button, Card, Input, Select, useDrawerHeader } from "even-toolkit/web";
 import { IcEditAdd, IcTrash } from "even-toolkit/web/icons/svg-icons";
 import type { Workout, Exercise } from "../types/workout";
 import { useTranslation } from "../hooks/useTranslation";
@@ -166,7 +166,7 @@ function SwipeDeleteCard({
   }, [onDelete]);
 
   return (
-    <div className="relative overflow-hidden">
+    <div className="relative overflow-x-hidden overflow-y-visible">
       {onDelete && offset < 0 && (
         <button
           type="button"
@@ -405,8 +405,7 @@ export default function WorkoutEditor() {
                       </div>
                       <div>
                         <span className="text-[11px] tracking-[-0.11px] text-text-dim font-normal">{t('editor.type')}</span>
-                        <SegmentedControl
-                          size="small"
+                        <Select
                           className="mt-1"
                           options={[
                             { label: t('editor.reps'), value: "reps" },
