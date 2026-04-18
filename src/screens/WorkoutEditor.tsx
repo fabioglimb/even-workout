@@ -166,7 +166,7 @@ function SwipeDeleteCard({
   }, [onDelete]);
 
   return (
-    <div className="relative overflow-x-hidden overflow-y-visible">
+    <div className="relative">
       {onDelete && offset < 0 && (
         <button
           type="button"
