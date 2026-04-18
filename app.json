@@ -1,0 +1,18 @@
+{
+  "package_id": "com.evenworkout.g2",
+  "edition": "202601",
+  "name": "ER Workout",
+  "version": "0.2.0",
+  "min_sdk_version": "0.0.9",
+  "min_app_version": "2.0.0",
+  "entrypoint": "index.html",
+  "permissions": [
+    {
+      "name": "network",
+      "desc": "Required for loading the even-toolkit design system assets"
+    }
+  ],
+  "supported_languages": [
+    "en"
+  ]
+}
