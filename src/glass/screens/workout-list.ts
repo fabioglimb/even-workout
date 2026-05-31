@@ -25,12 +25,13 @@ export const workoutListScreen: GlassScreen<WorkoutSnapshot, WorkoutActions> = {
   },
 
   action(action, nav, snapshot, ctx) {
-    const allWorkouts = snapshot.allWorkouts;
+    const favSet = new Set(snapshot.favoriteIds);
+    const sorted = [...snapshot.allWorkouts].sort((a, b) => (favSet.has(a.id) ? 0 : 1) - (favSet.has(b.id) ? 0 : 1));
     if (action.type === 'HIGHLIGHT_MOVE') {
-      return { ...nav, highlightedIndex: moveHighlight(nav.highlightedIndex, action.direction, allWorkouts.length - 1) };
+      return { ...nav, highlightedIndex: moveHighlight(nav.highlightedIndex, action.direction, sorted.length - 1) };
     }
     if (action.type === 'SELECT_HIGHLIGHTED') {
-      const workout = allWorkouts[nav.highlightedIndex];
+      const workout = sorted[nav.highlightedIndex];
       if (workout) ctx.navigate(`/workout/${workout.id}`);
       return nav;
     }
