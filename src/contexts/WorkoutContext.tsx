@@ -80,9 +80,10 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
 
       if (saved.length > 0) {
         setCustomWorkouts(saved);
-      } else {
-        saveCustomWorkouts(presetWorkouts);
       }
+      // If storage returns empty (first run or storage bridge not ready), keep
+      // the preset workouts that are already in state — do NOT write to storage,
+      // which would overwrite real user data if the bridge hasn't initialised yet.
 
       setSessionHistory(history);
       setScheduleEntries(schedule);
