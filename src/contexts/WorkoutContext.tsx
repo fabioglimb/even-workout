@@ -40,6 +40,7 @@ interface WorkoutContextValue {
   addWorkout: (workout: Workout) => void;
   updateWorkout: (workout: Workout) => void;
   removeWorkout: (id: string) => void;
+  moveWorkout: (from: number, to: number) => void;
   recordSession: (record: SessionRecord) => void;
   removeSession: (id: string) => void;
   clearHistory: () => void;
@@ -270,6 +271,16 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const moveWorkout = useCallback((from: number, to: number) => {
+    setCustomWorkouts((prev) => {
+      const next = [...prev];
+      const [item] = next.splice(from, 1);
+      next.splice(to, 0, item);
+      saveCustomWorkouts(next);
+      return next;
+    });
+  }, []);
+
   const recordSession = useCallback((record: SessionRecord) => {
     saveSession(record);
     setSessionHistory((prev) => [record, ...prev]);
@@ -353,6 +364,7 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
         addWorkout,
         updateWorkout,
         removeWorkout,
+        moveWorkout,
         recordSession,
         removeSession,
         clearHistory,
