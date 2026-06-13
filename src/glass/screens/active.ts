@@ -9,6 +9,7 @@ import { moveHighlight, clampIndex } from 'even-toolkit/glass-nav';
 import type { ActiveWorkoutState, Workout } from '../../types/workout';
 import type { AppLanguage } from '../../utils/i18n';
 import { t } from '../../utils/i18n';
+import { getSetWeight } from '../../utils/weight';
 import type { WorkoutSnapshot, WorkoutActions } from '../shared';
 import { buildPaneText, buildSplitHeader, formatDuration } from '../shared';
 
@@ -65,11 +66,13 @@ function buildExerciseLeftLines(state: ActiveWorkoutState, workout: Workout, lan
   if (!exercise) return [];
 
   const isTimed = exercise.durationSeconds != null;
+  // Per-set weight for the current set (falls back to the base weight).
+  const weight = getSetWeight(exercise, state.currentSet - 1);
   return withSpacerRows([
     `• ${t('glass.set', lang)} ${state.currentSet}/${exercise.sets}`,
     // For timed exercises the live timer is shown in the right pane instead of "30s".
     isTimed ? '' : `• ${formatExercisePrescription(exercise, lang)}`,
-    exercise.weightKg ? `• ${exercise.weightKg}kg` : '',
+    weight !== null ? `• ${weight}kg` : '',
     `• REST ${exercise.restSeconds}s`,
   ].filter(Boolean));
 }
