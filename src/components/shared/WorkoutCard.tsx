@@ -1,11 +1,12 @@
 import { useNavigate } from "react-router";
 import { useRef, useState, useCallback } from "react";
 import { Card } from "even-toolkit/web";
-import { IcTrash } from "even-toolkit/web/icons/svg-icons";
+import { IcTrash, IcStatusGrabber } from "even-toolkit/web/icons/svg-icons";
 import { DifficultyBadge } from "./DifficultyBadge";
 import { formatDuration } from "../../utils/format";
 import { useTranslation } from "../../hooks/useTranslation";
 import type { Workout } from "../../types/workout";
+import type { HTMLAttributes } from "react";
 import type { TouchEvent as ReactTouchEvent } from "react";
 
 const DELETE_WIDTH = 72;
@@ -16,9 +17,10 @@ interface WorkoutCardProps {
   isFavorite?: boolean;
   onToggleFavorite?: () => void;
   onDelete?: () => void;
+  dragHandleProps?: HTMLAttributes<HTMLDivElement>;
 }
 
-export function WorkoutCard({ workout, isFavorite, onToggleFavorite, onDelete }: WorkoutCardProps) {
+export function WorkoutCard({ workout, isFavorite, onToggleFavorite, onDelete, dragHandleProps }: WorkoutCardProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [offset, setOffset] = useState(0);
@@ -80,26 +82,39 @@ export function WorkoutCard({ workout, isFavorite, onToggleFavorite, onDelete }:
         }}
       >
         <Card
-          className="cursor-pointer transition-all hover:bg-surface-light relative"
+          className="cursor-pointer transition-all hover:bg-surface-light"
           onClick={() => navigate(`/workout/${workout.id}`)}
         >
-          <div className="absolute right-4 top-1/2 -translate-y-1/2">
-            <DifficultyBadge difficulty={workout.difficulty} />
-          </div>
-          <div className="flex items-center gap-2 mb-2 pr-24">
-            {onToggleFavorite && (
-              <button type="button" onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }} className="text-[17px] leading-none cursor-pointer shrink-0">
-                {isFavorite ? '★' : '☆'}
-              </button>
-            )}
-            <h3 className="text-[17px] tracking-[-0.17px] text-text">{workout.title}</h3>
-          </div>
-          <p className="text-[13px] tracking-[-0.13px] text-text-dim mb-2 pr-24">
-            {workout.target}
-          </p>
-          <div className="flex items-center gap-4 text-[11px] tracking-[-0.11px] text-text-dim">
-            <span>{formatDuration(workout.estimatedMinutes)}</span>
-            <span>{workout.exercises.length} {t('detail.exercises')}</span>
+          <div className="flex items-stretch gap-3">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-2">
+                {onToggleFavorite && (
+                  <button type="button" onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }} className="text-[17px] leading-none cursor-pointer shrink-0">
+                    {isFavorite ? '★' : '☆'}
+                  </button>
+                )}
+                <h3 className="text-[17px] tracking-[-0.17px] text-text">{workout.title}</h3>
+              </div>
+              <p className="text-[13px] tracking-[-0.13px] text-text-dim mb-2">
+                {workout.target}
+              </p>
+              <div className="flex items-center gap-4 text-[11px] tracking-[-0.11px] text-text-dim">
+                <span>{formatDuration(workout.estimatedMinutes)}</span>
+                <span>{workout.exercises.length} {t('detail.exercises')}</span>
+              </div>
+            </div>
+            <div className={`flex flex-col items-center shrink-0 ${dragHandleProps ? 'justify-between' : 'justify-center'}`}>
+              <DifficultyBadge difficulty={workout.difficulty} />
+              {dragHandleProps && (
+                <div
+                  className="flex items-center justify-center touch-none p-1"
+                  onClick={(e) => e.stopPropagation()}
+                  {...dragHandleProps}
+                >
+                  <IcStatusGrabber width={16} height={16} className="text-text-dim" />
+                </div>
+              )}
+            </div>
           </div>
         </Card>
       </div>
