@@ -1,6 +1,7 @@
 import { Card } from "even-toolkit/web";
 import type { Exercise } from "../../types/workout";
 import { useTranslation } from "../../hooks/useTranslation";
+import { getSetWeight } from "../../utils/weight";
 
 interface ExerciseCardProps {
   exercise: Exercise;
@@ -9,6 +10,7 @@ interface ExerciseCardProps {
 
 export function ExerciseCard({ exercise, currentSet }: ExerciseCardProps) {
   const { t } = useTranslation();
+  const weight = getSetWeight(exercise, currentSet - 1);
   return (
     <Card variant="elevated" padding="lg" className="text-center w-full">
       <p className="text-[11px] tracking-[-0.11px] text-accent mb-2">
@@ -26,6 +28,11 @@ export function ExerciseCard({ exercise, currentSet }: ExerciseCardProps) {
           ? `${exercise.reps} ${t('detail.reps')}`
           : `${exercise.durationSeconds}s`}
       </p>
+      {weight !== null && (
+        <p className="text-[15px] tracking-[-0.15px] text-text-dim tabular-nums mt-2">
+          {weight} {t('editor.kg')}
+        </p>
+      )}
     </Card>
   );
 }

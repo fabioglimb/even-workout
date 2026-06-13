@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, type ReactNode, type TouchEvent as ReactTouchEvent } from "react";
 import { useParams, useNavigate } from "react-router";
 import { useWorkoutContext } from "../contexts/WorkoutContext";
-import { BottomActionBar, Button, Card, Input, Select, useDrawerHeader } from "even-toolkit/web";
+import { BottomActionBar, Button, Card, Checkbox, Input, Select, useDrawerHeader } from "even-toolkit/web";
 import { IcEditAdd, IcTrash } from "even-toolkit/web/icons/svg-icons";
 import type { Workout, Exercise } from "../types/workout";
 import { useTranslation } from "../hooks/useTranslation";
@@ -20,6 +20,8 @@ type ExerciseDraft = {
   reps: string;
   durationSeconds: string;
   weightKg: string;
+  setWeightsKg: string[];
+  perSetWeights: boolean;
   restSeconds: string;
   mode: "reps" | "timed";
 };
@@ -31,18 +33,28 @@ function emptyExerciseDraft(): ExerciseDraft {
     reps: "10",
     durationSeconds: "30",
     weightKg: "",
+    setWeightsKg: [],
+    perSetWeights: false,
     restSeconds: "45",
     mode: "reps",
   };
 }
 
 function toExerciseDraft(exercise: Exercise): ExerciseDraft {
+  const perSet = Array.isArray(exercise.setWeightsKg) && exercise.setWeightsKg.length > 0;
   return {
     name: exercise.name,
     sets: String(exercise.sets),
     reps: String(exercise.reps ?? 10),
     durationSeconds: String(exercise.durationSeconds ?? 30),
     weightKg: exercise.weightKg == null ? "" : String(exercise.weightKg),
+    setWeightsKg: perSet
+      ? Array.from({ length: exercise.sets }, (_, i) => {
+          const v = exercise.setWeightsKg?.[i];
+          return v == null ? "" : String(v);
+        })
+      : [],
+    perSetWeights: perSet,
     restSeconds: String(exercise.restSeconds),
     mode: exercise.durationSeconds != null ? "timed" : "reps",
   };
@@ -72,6 +84,9 @@ function toExercise(draft: ExerciseDraft): Exercise {
   const sets = parsePositiveInt(draft.sets, 1);
   const restSeconds = parseNonNegativeInt(draft.restSeconds, 0);
   const weightKg = parseOptionalNumber(draft.weightKg);
+  const setWeightsKg = draft.perSetWeights
+    ? Array.from({ length: sets }, (_, i) => parseOptionalNumber(draft.setWeightsKg[i] ?? ""))
+    : undefined;
 
   if (draft.mode === "timed") {
     return {
@@ -80,6 +95,7 @@ function toExercise(draft: ExerciseDraft): Exercise {
       reps: null,
       durationSeconds: parsePositiveInt(draft.durationSeconds, 1),
       weightKg,
+      ...(setWeightsKg ? { setWeightsKg } : {}),
       restSeconds,
     };
   }
@@ -90,6 +106,7 @@ function toExercise(draft: ExerciseDraft): Exercise {
     reps: parsePositiveInt(draft.reps, 1),
     durationSeconds: null,
     weightKg,
+    ...(setWeightsKg ? { setWeightsKg } : {}),
     restSeconds,
   };
 }
@@ -224,6 +241,34 @@ export default function WorkoutEditor() {
   const updateExercise = (index: number, field: keyof ExerciseDraft, value: string) => {
     setExercises((prev) =>
       prev.map((ex, i) => (i === index ? { ...ex, [field]: value } : ex))
+    );
+  };
+
+  const togglePerSetWeights = (index: number, enabled: boolean) => {
+    setExercises((prev) =>
+      prev.map((ex, i) => {
+        if (i !== index) return ex;
+        if (enabled) {
+          const setsCount = parsePositiveInt(ex.sets, 1);
+          const fill = ex.weightKg;
+          const initial = Array.from({ length: setsCount }, (_, k) => ex.setWeightsKg[k] ?? fill);
+          return { ...ex, perSetWeights: true, setWeightsKg: initial };
+        }
+        return { ...ex, perSetWeights: false };
+      }),
+    );
+  };
+
+  const updateSetWeight = (index: number, setIdx: number, value: string) => {
+    setExercises((prev) =>
+      prev.map((ex, i) => {
+        if (i !== index) return ex;
+        const setsCount = parsePositiveInt(ex.sets, 1);
+        const next = Array.from({ length: setsCount }, (_, k) =>
+          k === setIdx ? value : (ex.setWeightsKg[k] ?? ""),
+        );
+        return { ...ex, setWeightsKg: next };
+      }),
     );
   };
 
@@ -389,9 +434,34 @@ export default function WorkoutEditor() {
                           step="0.5"
                           value={ex.weightKg}
                           onChange={(e) => updateExercise(i, "weightKg", e.target.value)}
+                          disabled={ex.perSetWeights}
                         />
                       </div>
                     </div>
+                    <Checkbox
+                      checked={ex.perSetWeights}
+                      onChange={(checked) => togglePerSetWeights(i, checked)}
+                      label={t('editor.perSetWeight')}
+                    />
+                    {ex.perSetWeights && (
+                      <div className="grid grid-cols-3 gap-2">
+                        {Array.from({ length: parsePositiveInt(ex.sets, 1) }, (_, setIdx) => (
+                          <div key={setIdx}>
+                            <span className="text-[11px] tracking-[-0.11px] text-text-dim font-normal">
+                              {t('editor.setLabel')} {setIdx + 1}
+                            </span>
+                            <Input
+                              className="mt-1"
+                              type="number"
+                              min={0}
+                              step="0.5"
+                              value={ex.setWeightsKg[setIdx] ?? ""}
+                              onChange={(e) => updateSetWeight(i, setIdx, e.target.value)}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
                     <div className="grid grid-cols-2 gap-2">
                       <div>
                         <span className="text-[11px] tracking-[-0.11px] text-text-dim font-normal">{t('editor.restS')}</span>

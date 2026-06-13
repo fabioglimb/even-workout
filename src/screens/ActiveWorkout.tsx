@@ -1,22 +1,28 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router";
 import { useWorkoutContext } from "../contexts/WorkoutContext";
 import { useRestTimer } from "../hooks/useRestTimer";
+import { useExerciseTimer } from "../hooks/useExerciseTimer";
+import { useElapsedTime } from "../hooks/useElapsedTime";
 import { useWorkoutProgress } from "../hooks/useWorkoutProgress";
 import { useWorkoutActions } from "../hooks/useWorkoutActions";
 import { getWorkoutById } from "../data/workouts";
-import { Button, Progress, useDrawerHeader } from "even-toolkit/web";
+import { Button, ConfirmDialog, Progress, TimerRing, useDrawerHeader } from "even-toolkit/web";
+import { IcChevronBack } from "even-toolkit/web/icons/svg-icons";
 import { ExerciseCard } from "../components/shared/ExerciseCard";
 import { RestTimer } from "../components/shared/RestTimer";
 import { ExercisePreview } from "../components/shared/ExercisePreview";
 import { useTranslation } from "../hooks/useTranslation";
+import { formatTime } from "../utils/format";
 
 export default function ActiveWorkout() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { activeState, allWorkouts } = useWorkoutContext();
+  const { activeState, allWorkouts, startExerciseTimer, pauseExerciseTimer } = useWorkoutContext();
   const { t } = useTranslation();
   const { isResting, restRemaining } = useRestTimer();
+  const { isTimedExercise, remaining: exerciseRemaining, running: timerRunning } = useExerciseTimer();
+  const elapsedSeconds = useElapsedTime(activeState?.startedAt ?? null);
   const {
     completedSets,
     totalSets,
@@ -26,6 +32,8 @@ export default function ActiveWorkout() {
     currentSet,
   } = useWorkoutProgress();
   const { completeSet, skipRest, finishWorkout } = useWorkoutActions();
+
+  const [confirmExit, setConfirmExit] = useState(false);
 
   const workout = id ? getWorkoutById(id, allWorkouts) : undefined;
 
@@ -58,15 +66,27 @@ export default function ActiveWorkout() {
 
   useDrawerHeader({
     title: workout?.title ?? t('editor.workout'),
-    backTo: `/workout/${id}`,
+    left: (
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => setConfirmExit(true)}
+        aria-label={t('active.exitConfirm')}
+      >
+        <IcChevronBack width={20} height={20} />
+      </Button>
+    ),
     right: (
       <span className="text-[11px] tracking-[-0.11px] text-text-dim tabular-nums">
         {completedSets}/{totalSets} {t('active.sets')}
       </span>
     ),
     below: (
-      <div className="px-3 mt-3 pb-2">
-        <Progress value={progress * 100} />
+      <div className="px-3 mt-3 pb-2 flex items-center gap-3">
+        <Progress value={progress * 100} className="flex-1" />
+        <span className="text-[11px] tracking-[-0.11px] text-text-dim tabular-nums shrink-0">
+          {formatTime(elapsedSeconds)}
+        </span>
       </div>
     ),
   });
@@ -100,14 +120,50 @@ export default function ActiveWorkout() {
       ) : (
         <div className="flex flex-col items-center gap-6 w-full">
           <ExerciseCard exercise={currentExercise} currentSet={currentSet} />
-          <Button size="lg" className="w-full" onClick={completeSet}>
-            {t('active.completeSet')}
-          </Button>
+
+          {isTimedExercise && currentExercise.durationSeconds !== null ? (
+            <div className="flex flex-col items-center gap-6 w-full">
+              <TimerRing
+                remaining={exerciseRemaining}
+                total={currentExercise.durationSeconds}
+              />
+              <div className="flex w-full gap-3">
+                <Button
+                  size="lg"
+                  variant="secondary"
+                  className="flex-1"
+                  onClick={timerRunning ? pauseExerciseTimer : startExerciseTimer}
+                  disabled={exerciseRemaining <= 0}
+                >
+                  {timerRunning ? t('active.pause') : t('active.start')}
+                </Button>
+                <Button size="lg" className="flex-1" onClick={completeSet}>
+                  {t('active.done')}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <Button size="lg" className="w-full" onClick={completeSet}>
+              {t('active.completeSet')}
+            </Button>
+          )}
+
           {nextExercise && (
             <ExercisePreview exercise={nextExercise} />
           )}
         </div>
       )}
+
+      <ConfirmDialog
+        open={confirmExit}
+        onClose={() => setConfirmExit(false)}
+        onConfirm={handleQuit}
+        title={t('active.exitConfirmTitle')}
+        description={t('active.exitConfirmDesc')}
+        confirmLabel={t('active.exitConfirm')}
+        cancelLabel={t('active.exitCancel')}
+        variant="danger"
+      />
     </div>
   );
 }

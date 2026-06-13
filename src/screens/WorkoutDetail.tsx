@@ -67,7 +67,14 @@ export default function WorkoutDetail() {
                   <TableCell className="text-center text-text-dim tabular-nums">
                     {ex.reps !== null ? `${ex.reps}` : `${ex.durationSeconds}s`}
                   </TableCell>
-                  <TableCell className="text-center text-text-dim tabular-nums">{ex.weightKg ?? '--'}</TableCell>
+                  <TableCell className="text-center text-text-dim tabular-nums">
+                    {ex.setWeightsKg && ex.setWeightsKg.length > 0
+                      ? ex.setWeightsKg
+                          .slice(0, ex.sets)
+                          .map((w) => (w == null ? (ex.weightKg ?? '--') : w))
+                          .join(' / ')
+                      : (ex.weightKg ?? '--')}
+                  </TableCell>
                   <TableCell className="text-center text-text-dim tabular-nums">{ex.restSeconds}s</TableCell>
                 </TableRow>
               ))}

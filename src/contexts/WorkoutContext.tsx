@@ -7,7 +7,7 @@ import {
   useRef,
   type ReactNode,
 } from "react";
-import type { Workout, ActiveWorkoutState, SessionRecord, WorkoutScheduleEntry } from "../types/workout";
+import type { Workout, ActiveWorkoutState, Exercise, SessionRecord, WorkoutScheduleEntry } from "../types/workout";
 import type { AppLanguage } from "../utils/i18n";
 import { presetWorkouts, getWorkoutById, getTotalSets } from "../data/workouts";
 import {
@@ -37,6 +37,9 @@ interface WorkoutContextValue {
   skipRest: () => void;
   finishWorkout: () => void;
   setRestRemaining: (value: number | ((prev: number) => number)) => void;
+  startExerciseTimer: () => void;
+  pauseExerciseTimer: () => void;
+  setExerciseRemaining: (value: number | ((prev: number) => number)) => void;
   addWorkout: (workout: Workout) => void;
   updateWorkout: (workout: Workout) => void;
   removeWorkout: (id: string) => void;
@@ -77,10 +80,15 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
         storageGet<string[]>('workout-favorites', []),
       ]);
 
+      // Only adopt stored workouts when the read actually returned data.
+      // On an empty read — genuine first launch OR a transient/cold storage
+      // read (e.g. returning from the Even Realities settings) — we keep the
+      // in-memory presets and DO NOT write to storage. Persisting here would
+      // overwrite real custom workouts with presets on a transient empty read,
+      // which is what caused users to lose their saved workouts. Storage is
+      // now only ever written by an explicit user mutation.
       if (saved.length > 0) {
         setCustomWorkouts(saved);
-      } else {
-        saveCustomWorkouts(presetWorkouts);
       }
 
       setSessionHistory(history);
@@ -114,12 +122,15 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
   const startWorkout = useCallback((workoutId: string) => {
     const workout = getWorkoutById(workoutId, workoutsRef.current);
     if (!workout) return;
+    const firstExercise: Exercise | undefined = workout.exercises[0];
     setActiveState({
       workoutId,
       exerciseIndex: 0,
       currentSet: 1,
       phase: "exercise",
       restRemaining: 0,
+      exerciseRemaining: firstExercise?.durationSeconds ?? null,
+      exerciseRunning: false,
       startedAt: Date.now(),
       finishedAt: null,
       completedSets: 0,
@@ -166,12 +177,19 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
       const isLastSet = prev.currentSet >= exercise.sets;
 
       if (isLastExercise && isLastSet) {
-        return { ...prev, completedSets: newCompletedSets, phase: "exercise", finishedAt: Date.now() };
+        return {
+          ...prev,
+          completedSets: newCompletedSets,
+          phase: "exercise",
+          finishedAt: Date.now(),
+          exerciseRunning: false,
+        };
       }
 
       if (exercise.restSeconds === 0) {
         // Skip rest phase entirely when no rest configured
         if (isLastSet) {
+          const nextEx = workout.exercises[prev.exerciseIndex + 1];
           return {
             ...prev,
             completedSets: newCompletedSets,
@@ -179,6 +197,8 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
             currentSet: 1,
             phase: "exercise",
             restRemaining: 0,
+            exerciseRemaining: nextEx?.durationSeconds ?? null,
+            exerciseRunning: false,
           };
         }
         return {
@@ -187,6 +207,8 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
           currentSet: prev.currentSet + 1,
           phase: "exercise",
           restRemaining: 0,
+          exerciseRemaining: exercise.durationSeconds ?? null,
+          exerciseRunning: false,
         };
       }
 
@@ -195,6 +217,7 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
         completedSets: newCompletedSets,
         phase: "rest",
         restRemaining: exercise.restSeconds,
+        exerciseRunning: false,
       };
     });
   }, [activeState]);
@@ -211,14 +234,17 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
       if (isLastSet) {
         const nextIndex = prev.exerciseIndex + 1;
         if (nextIndex >= workout.exercises.length) {
-          return { ...prev, phase: "exercise", restRemaining: 0 };
+          return { ...prev, phase: "exercise", restRemaining: 0, exerciseRunning: false };
         }
+        const nextEx = workout.exercises[nextIndex];
         return {
           ...prev,
           exerciseIndex: nextIndex,
           currentSet: 1,
           phase: "exercise",
           restRemaining: 0,
+          exerciseRemaining: nextEx?.durationSeconds ?? null,
+          exerciseRunning: false,
         };
       }
 
@@ -227,6 +253,8 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
         currentSet: prev.currentSet + 1,
         phase: "exercise",
         restRemaining: 0,
+        exerciseRemaining: exercise.durationSeconds ?? null,
+        exerciseRunning: false,
       };
     });
   }, []);
@@ -241,6 +269,31 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
         if (!prev) return prev;
         const newVal = typeof value === "function" ? value(prev.restRemaining) : value;
         return { ...prev, restRemaining: newVal };
+      });
+    },
+    []
+  );
+
+  const startExerciseTimer = useCallback(() => {
+    setActiveState((prev) => {
+      if (!prev || prev.exerciseRemaining === null || prev.exerciseRemaining <= 0) return prev;
+      return { ...prev, exerciseRunning: true };
+    });
+  }, []);
+
+  const pauseExerciseTimer = useCallback(() => {
+    setActiveState((prev) => {
+      if (!prev) return prev;
+      return { ...prev, exerciseRunning: false };
+    });
+  }, []);
+
+  const setExerciseRemaining = useCallback(
+    (value: number | ((prev: number) => number)) => {
+      setActiveState((prev) => {
+        if (!prev || prev.exerciseRemaining === null) return prev;
+        const newVal = typeof value === "function" ? value(prev.exerciseRemaining) : value;
+        return { ...prev, exerciseRemaining: newVal };
       });
     },
     []
@@ -350,6 +403,9 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
         skipRest,
         finishWorkout,
         setRestRemaining,
+        startExerciseTimer,
+        pauseExerciseTimer,
+        setExerciseRemaining,
         addWorkout,
         updateWorkout,
         removeWorkout,

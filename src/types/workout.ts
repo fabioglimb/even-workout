@@ -16,6 +16,8 @@ export interface Exercise {
   reps: number | null;
   durationSeconds: number | null;
   weightKg?: number | null;
+  /** Optional per-set weight overrides. Falls back to `weightKg` when entry is missing. */
+  setWeightsKg?: (number | null)[];
   restSeconds: number;
 }
 
@@ -46,6 +48,10 @@ export interface ActiveWorkoutState {
   currentSet: number;
   phase: WorkoutPhase;
   restRemaining: number;
+  /** Seconds left for the current timed exercise. `null` for rep-based exercises. */
+  exerciseRemaining: number | null;
+  /** True while the exercise countdown is actively ticking. */
+  exerciseRunning: boolean;
   startedAt: number;
   finishedAt: number | null;
   completedSets: number;

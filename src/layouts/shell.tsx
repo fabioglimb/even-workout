@@ -2,6 +2,7 @@ import { DrawerShell } from 'even-toolkit/web';
 import type { SideDrawerItem } from 'even-toolkit/web';
 import { IcMenuHome, IcEditChecklist, IcEditSettings, IcFeatCalendar } from 'even-toolkit/web/icons/svg-icons';
 import { useTranslation } from '../hooks/useTranslation';
+import { HeaderClock } from '../components/shared/HeaderClock';
 
 const iconProps = { width: 18, height: 18, className: 'text-current' };
 
@@ -58,6 +59,7 @@ export function Shell() {
       getPageTitle={getPageTitle}
       deriveActiveId={deriveActiveId}
       getBackPath={getBackPath}
+      defaultRight={<HeaderClock />}
     />
   );
 }

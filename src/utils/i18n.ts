@@ -248,6 +248,14 @@ const translations: Record<string, Record<AppLanguage, string>> = {
     en: 'Kg', it: 'Kg', es: 'Kg', fr: 'Kg', de: 'Kg',
     pt: 'Kg', ja: 'Kg', zh: 'Kg', ko: 'Kg', ru: 'Кг',
   },
+  'editor.perSetWeight': {
+    en: 'Different weight per set', it: 'Peso diverso per serie', es: 'Peso distinto por serie', fr: 'Poids différent par série', de: 'Unterschiedliches Gewicht pro Satz',
+    pt: 'Peso diferente por série', ja: 'セットごとに重量を変える', zh: '每组使用不同重量', ko: '세트별 다른 무게', ru: 'Разный вес для каждого подхода',
+  },
+  'editor.setLabel': {
+    en: 'Set', it: 'Serie', es: 'Serie', fr: 'Série', de: 'Satz',
+    pt: 'Série', ja: 'セット', zh: '组', ko: '세트', ru: 'Подход',
+  },
   'editor.secs': {
     en: 'Secs', it: 'Sec', es: 'Seg', fr: 'Sec', de: 'Sek',
     pt: 'Seg', ja: '秒', zh: '秒', ko: '초', ru: 'Сек',
@@ -309,6 +317,34 @@ const translations: Record<string, Record<AppLanguage, string>> = {
   'active.sets': {
     en: 'sets', it: 'serie', es: 'series', fr: 'séries', de: 'Sätze',
     pt: 'séries', ja: 'セット', zh: '组', ko: '세트', ru: 'подх.',
+  },
+  'active.start': {
+    en: 'Start', it: 'Avvia', es: 'Empezar', fr: 'Démarrer', de: 'Start',
+    pt: 'Iniciar', ja: 'スタート', zh: '开始', ko: '시작', ru: 'Старт',
+  },
+  'active.pause': {
+    en: 'Pause', it: 'Pausa', es: 'Pausa', fr: 'Pause', de: 'Pause',
+    pt: 'Pausar', ja: '一時停止', zh: '暂停', ko: '일시정지', ru: 'Пауза',
+  },
+  'active.done': {
+    en: 'Done', it: 'Fatto', es: 'Hecho', fr: 'Terminé', de: 'Fertig',
+    pt: 'Pronto', ja: '完了', zh: '完成', ko: '완료', ru: 'Готово',
+  },
+  'active.exitConfirmTitle': {
+    en: 'Exit workout?', it: 'Uscire dall\'allenamento?', es: '¿Salir del entrenamiento?', fr: 'Quitter l\'entraînement ?', de: 'Training beenden?',
+    pt: 'Sair do treino?', ja: 'ワークアウトを終了？', zh: '退出锻炼？', ko: '운동을 종료할까요?', ru: 'Выйти из тренировки?',
+  },
+  'active.exitConfirmDesc': {
+    en: 'Your progress for this session will be lost.', it: 'I progressi di questa sessione andranno persi.', es: 'Se perderá el progreso de esta sesión.', fr: 'Votre progression sera perdue.', de: 'Dein Fortschritt geht verloren.',
+    pt: 'O progresso desta sessão será perdido.', ja: '今回のセッションの進捗は失われます。', zh: '本次锻炼进度将丢失。', ko: '이번 세션의 진행 상황이 사라집니다.', ru: 'Прогресс этой сессии будет потерян.',
+  },
+  'active.exitCancel': {
+    en: 'Keep going', it: 'Continua', es: 'Continuar', fr: 'Continuer', de: 'Weitermachen',
+    pt: 'Continuar', ja: '続ける', zh: '继续', ko: '계속하기', ru: 'Продолжить',
+  },
+  'active.exitConfirm': {
+    en: 'Quit', it: 'Esci', es: 'Salir', fr: 'Quitter', de: 'Beenden',
+    pt: 'Sair', ja: '終了', zh: '退出', ko: '종료', ru: 'Выйти',
   },
 
   // ── Workout Complete ──
