@@ -142,9 +142,12 @@ export default function WorkoutList() {
               transform: `translateY(${dragOffset}px)`,
               position: 'relative',
               zIndex: 10,
-              opacity: 0.92,
-              filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.15))',
-            } : {}}
+              borderRadius: 6,
+              // box-shadow (composited) instead of filter: drop-shadow, which
+              // repaints every frame during the transform/reorder and flickers.
+              boxShadow: '0 6px 16px rgba(0,0,0,0.18)',
+              willChange: 'transform',
+            } : undefined}
           >
             <WorkoutCard
               workout={workout}
