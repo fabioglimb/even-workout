@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, type ReactNode, type TouchEvent as ReactTouchEvent } from "react";
 import { useParams, useNavigate } from "react-router";
 import { useWorkoutContext } from "../contexts/WorkoutContext";
-import { BottomActionBar, Button, Card, Checkbox, Input, Select, Textarea, useDrawerHeader } from "even-toolkit/web";
+import { BottomActionBar, Button, Card, Checkbox, Input, Select, Textarea, Toast, useDrawerHeader } from "even-toolkit/web";
 import { IcEditAdd, IcTrash, IcGuideChevronDrillUp, IcGuideChevronDrillDown, IcFeatCamera } from "even-toolkit/web/icons/svg-icons";
 import type { Workout, Exercise } from "../types/workout";
 import { useTranslation } from "../hooks/useTranslation";
@@ -239,6 +239,16 @@ export default function WorkoutEditor() {
   const [estimatedMinutesInput, setEstimatedMinutesInput] = useState("30");
   const [exercises, setExercises] = useState<ExerciseDraft[]>([emptyExerciseDraft()]);
 
+  const [titleError, setTitleError] = useState(false);
+  const [exerciseNameErrors, setExerciseNameErrors] = useState<boolean[]>([]);
+  const [toast, setToast] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!toast) return;
+    const id = setTimeout(() => setToast(null), 3000);
+    return () => clearTimeout(id);
+  }, [toast]);
+
   useEffect(() => {
     if (id) {
       const existing = allWorkouts.find((w) => w.id === id);
@@ -341,9 +351,24 @@ export default function WorkoutEditor() {
   };
 
   const handleSave = () => {
-    if (!title.trim() || exercises.length === 0) return;
-    const validExercises = exercises.filter((e) => e.name.trim());
-    if (validExercises.length === 0) return;
+    const titleMissing = !title.trim();
+    const nameErrors = exercises.map((e) => !e.name.trim());
+    const anyExerciseMissingName = nameErrors.some(Boolean);
+    const noExercises = exercises.length === 0;
+
+    setTitleError(titleMissing);
+    setExerciseNameErrors(nameErrors);
+
+    if (titleMissing || noExercises || anyExerciseMissingName) {
+      if (titleMissing) {
+        setToast(t('editor.errTitleRequired'));
+      } else if (noExercises) {
+        setToast(t('editor.errAddExercise'));
+      } else {
+        setToast(t('editor.errExerciseName'));
+      }
+      return;
+    }
 
     const workout: Workout = {
       id: id ?? `custom-${Date.now().toString(36)}`,
@@ -351,7 +376,7 @@ export default function WorkoutEditor() {
       difficulty,
       target: target.trim() || "General",
       estimatedMinutes: parsePositiveInt(estimatedMinutesInput, 1),
-      exercises: validExercises.map(toExercise),
+      exercises: exercises.map(toExercise),
     };
 
     if (isEditing) {
@@ -376,7 +401,11 @@ export default function WorkoutEditor() {
           <Input
             placeholder={t('editor.workoutName')}
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            error={titleError}
+            onChange={(e) => {
+              setTitle(e.target.value);
+              if (titleError) setTitleError(false);
+            }}
           />
         </FieldRow>
         <div className="grid grid-cols-2 gap-2 border-b border-border px-3 py-3">
@@ -457,7 +486,17 @@ export default function WorkoutEditor() {
                         <Input
                           placeholder={t('editor.exerciseName')}
                           value={ex.name}
-                          onChange={(e) => updateExercise(i, "name", e.target.value)}
+                          error={exerciseNameErrors[i] ?? false}
+                          onChange={(e) => {
+                            updateExercise(i, "name", e.target.value);
+                            if (exerciseNameErrors[i]) {
+                              setExerciseNameErrors((prev) => {
+                                const next = [...prev];
+                                next[i] = false;
+                                return next;
+                              });
+                            }
+                          }}
                         />
                       </div>
                     </div>
@@ -613,11 +652,17 @@ export default function WorkoutEditor() {
       <BottomActionBar className="-mx-3 mt-4">
         <div className="grid grid-cols-2 gap-3">
           <Button variant="secondary" className="w-full" onClick={() => navigate("/")}>{t('editor.cancel')}</Button>
-          <Button className="w-full" onClick={handleSave} disabled={!title.trim()}>
+          <Button className="w-full" onClick={handleSave}>
             {isEditing ? t('editor.saveChanges') : t('editor.createWorkout')}
           </Button>
         </div>
       </BottomActionBar>
+
+      {toast && (
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-[420px] px-3">
+          <Toast message={toast} variant="error" />
+        </div>
+      )}
     </div>
   );
 }

@@ -19,6 +19,8 @@ export interface WorkoutActions {
   completeSet: () => void;
   skipRest: () => void;
   finishWorkout: () => void;
+  startExerciseTimer: () => void;
+  pauseExerciseTimer: () => void;
 }
 
 export function formatDuration(ms: number): string {

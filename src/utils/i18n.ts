@@ -328,6 +328,18 @@ const translations: Record<string, Record<AppLanguage, string>> = {
     en: 'Create Workout', it: 'Crea Allenamento', es: 'Crear Entrenamiento', fr: 'Créer l\'Entraînement', de: 'Training erstellen',
     pt: 'Criar Treino', ja: 'ワークアウト作成', zh: '创建锻炼', ko: '운동 만들기', ru: 'Создать тренировку',
   },
+  'editor.errTitleRequired': {
+    en: 'Enter a workout name', it: 'Inserisci un nome per l\'allenamento', es: 'Introduce un nombre para el entrenamiento', fr: 'Saisis un nom d\'entraînement', de: 'Gib einen Trainingsnamen ein',
+    pt: 'Insira um nome para o treino', ja: 'ワークアウト名を入力してください', zh: '请输入锻炼名称', ko: '운동 이름을 입력하세요', ru: 'Введите название тренировки',
+  },
+  'editor.errExerciseName': {
+    en: 'Give every exercise a name', it: 'Assegna un nome a ogni esercizio', es: 'Asigna un nombre a cada ejercicio', fr: 'Donne un nom à chaque exercice', de: 'Gib jeder Übung einen Namen',
+    pt: 'Dê um nome a cada exercício', ja: 'すべてのエクササイズに名前を付けてください', zh: '请为每个练习命名', ko: '모든 운동에 이름을 지정하세요', ru: 'Укажите название для каждого упражнения',
+  },
+  'editor.errAddExercise': {
+    en: 'Add at least one exercise', it: 'Aggiungi almeno un esercizio', es: 'Añade al menos un ejercicio', fr: 'Ajoute au moins un exercice', de: 'Füge mindestens eine Übung hinzu',
+    pt: 'Adicione pelo menos um exercício', ja: 'エクササイズを少なくとも1つ追加してください', zh: '请至少添加一个练习', ko: '운동을 하나 이상 추가하세요', ru: 'Добавьте хотя бы одно упражнение',
+  },
 
   // ── Active Workout ──
   'active.skipRest': {
@@ -537,6 +549,10 @@ const translations: Record<string, Record<AppLanguage, string>> = {
   'glass.skip': {
     en: 'Skip', it: 'Salta', es: 'Saltar', fr: 'Passer', de: 'Überspr.',
     pt: 'Pular', ja: 'スキップ', zh: '跳过', ko: '건너뛰기', ru: 'Пропуск',
+  },
+  'glass.pause': {
+    en: 'Stop', it: 'Stop', es: 'Parar', fr: 'Stop', de: 'Stopp',
+    pt: 'Parar', ja: '停止', zh: '停止', ko: '정지', ru: 'Стоп',
   },
   'glass.finish': {
     en: 'Finish', it: 'Fine', es: 'Terminar', fr: 'Terminer', de: 'Beenden',

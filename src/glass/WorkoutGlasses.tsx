@@ -27,6 +27,8 @@ export function WorkoutGlasses() {
     completeSet,
     skipRest,
     finishWorkout,
+    startExerciseTimer,
+    pauseExerciseTimer,
     language,
     favoriteIds,
   } = useWorkoutContext();
@@ -63,8 +65,10 @@ export function WorkoutGlasses() {
     completeSet,
     skipRest,
     finishWorkout,
+    startExerciseTimer,
+    pauseExerciseTimer,
   });
-  ctxRef.current = { navigate, startWorkout, completeSet, skipRest, finishWorkout };
+  ctxRef.current = { navigate, startWorkout, completeSet, skipRest, finishWorkout, startExerciseTimer, pauseExerciseTimer };
 
   // Wrap the router's onGlassAction to inject context
   const handleGlassAction = useCallback(

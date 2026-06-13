@@ -21,6 +21,12 @@ const REST_LAYOUT = ACTIVE_LAYOUT;
 
 function getActiveButtons(state: ActiveWorkoutState, workout: Workout, lang: AppLanguage): string[] {
   if (state.phase === 'rest') return [t('glass.skipRest', lang)];
+  const exercise = workout.exercises[state.exerciseIndex];
+  // Timed exercises get a Start/Stop button before Done and Skip.
+  if (exercise?.durationSeconds != null) {
+    const toggle = state.exerciseRunning ? t('glass.pause', lang) : t('glass.start', lang);
+    return [toggle, t('glass.done', lang), t('glass.skip', lang)];
+  }
   return [t('glass.done', lang), t('glass.skip', lang)];
 }
 
@@ -52,9 +58,11 @@ function buildExerciseLeftLines(state: ActiveWorkoutState, workout: Workout, lan
   const exercise = workout.exercises[state.exerciseIndex];
   if (!exercise) return [];
 
+  const isTimed = exercise.durationSeconds != null;
   return withSpacerRows([
     `• ${t('glass.set', lang)} ${state.currentSet}/${exercise.sets}`,
-    `• ${formatExercisePrescription(exercise, lang)}`,
+    // For timed exercises the live timer is shown in the right pane instead of "30s".
+    isTimed ? '' : `• ${formatExercisePrescription(exercise, lang)}`,
     exercise.weightKg ? `• ${exercise.weightKg}kg` : '',
     `• REST ${exercise.restSeconds}s`,
   ].filter(Boolean));
@@ -64,6 +72,20 @@ function buildExerciseRightLines(state: ActiveWorkoutState, workout: Workout, la
   const exercise = workout.exercises[state.exerciseIndex];
   const nextExercise = workout.exercises[state.exerciseIndex + 1] ?? null;
   if (!exercise) return [];
+
+  // Timed exercise → show the live countdown timer (reusing the rest-timer renderer).
+  if (exercise.durationSeconds != null) {
+    const sideLabel = state.exerciseSide ? (state.exerciseSide === 'left' ? '  L' : '  R') : '';
+    return [
+      `◆ ${t('glass.timer', lang)}${sideLabel}`,
+      '',
+      ...renderTimerLines({
+        running: state.exerciseRunning,
+        remaining: state.exerciseRemaining ?? exercise.durationSeconds,
+        total: exercise.durationSeconds,
+      }, 14, ACTIVE_RIGHT_WIDTH),
+    ];
+  }
 
   return withSpacerRows([
     `◆ ${t('glass.progress', lang)} ${state.completedSets}/${state.totalSets}`,
@@ -191,9 +213,20 @@ export const activeScreen: GlassScreen<WorkoutSnapshot, WorkoutActions> = {
       for (const tl of timerLines) {
         lines.push(line(tl, 'normal'));
       }
+    } else if (exercise?.durationSeconds != null) {
+      const sideLabel = state.exerciseSide ? (state.exerciseSide === 'left' ? '  L' : '  R') : '';
+      lines.push(line(`${t('glass.set', lang)} ${state.currentSet}/${exercise.sets}${sideLabel}`, 'normal'));
+      lines.push(line('', 'normal'));
+      const timerLines = renderTimerLines({
+        running: state.exerciseRunning,
+        remaining: state.exerciseRemaining ?? exercise.durationSeconds,
+        total: exercise.durationSeconds,
+      });
+      for (const tl of timerLines) {
+        lines.push(line(tl, 'normal'));
+      }
     } else {
-      const repBase = exercise?.reps ? `${exercise.reps} ${t('glass.reps', lang)}` : `${exercise?.durationSeconds}s`;
-      const rep = exercise?.unilateral ? `${repBase} L/R` : repBase;
+      const rep = `${exercise?.reps} ${t('glass.reps', lang)}`;
       lines.push(line(`${t('glass.set', lang)} ${state.currentSet}/${exercise?.sets}  ${rep}`, 'normal'));
     }
 
@@ -226,6 +259,14 @@ export const activeScreen: GlassScreen<WorkoutSnapshot, WorkoutActions> = {
     if (action.type === 'SELECT_HIGHLIGHTED') {
       const btnIdx = clampIndex(nav.highlightedIndex, buttons.length);
       const selected = buttons[btnIdx];
+      if (selected === t('glass.start', lang)) {
+        ctx.startExerciseTimer();
+        return nav;
+      }
+      if (selected === t('glass.pause', lang)) {
+        ctx.pauseExerciseTimer();
+        return nav;
+      }
       if (selected === t('glass.done', lang)) {
         ctx.completeSet();
         return nav;
