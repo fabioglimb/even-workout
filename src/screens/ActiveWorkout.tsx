@@ -18,10 +18,10 @@ import { formatTime } from "../utils/format";
 export default function ActiveWorkout() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { activeState, allWorkouts, startExerciseTimer, pauseExerciseTimer } = useWorkoutContext();
+  const { activeState, allWorkouts, startExerciseTimer, pauseExerciseTimer, advanceExerciseSide } = useWorkoutContext();
   const { t } = useTranslation();
   const { isResting, restRemaining } = useRestTimer();
-  const { isTimedExercise, remaining: exerciseRemaining, running: timerRunning } = useExerciseTimer();
+  const { isTimedExercise, remaining: exerciseRemaining, running: timerRunning, side } = useExerciseTimer();
   const elapsedSeconds = useElapsedTime(activeState?.startedAt ?? null);
   const {
     completedSets,
@@ -119,10 +119,15 @@ export default function ActiveWorkout() {
         </div>
       ) : (
         <div className="flex flex-col items-center gap-6 w-full">
-          <ExerciseCard exercise={currentExercise} currentSet={currentSet} />
+          <ExerciseCard exercise={currentExercise} currentSet={currentSet} side={side} />
 
           {isTimedExercise && currentExercise.durationSeconds !== null ? (
             <div className="flex flex-col items-center gap-6 w-full">
+              {side && (
+                <p className="text-[15px] tracking-[-0.15px] text-accent uppercase">
+                  {side === "left" ? t('active.leftSide') : t('active.rightSide')}
+                </p>
+              )}
               <TimerRing
                 remaining={exerciseRemaining}
                 total={currentExercise.durationSeconds}
@@ -137,8 +142,12 @@ export default function ActiveWorkout() {
                 >
                   {timerRunning ? t('active.pause') : t('active.start')}
                 </Button>
-                <Button size="lg" className="flex-1" onClick={completeSet}>
-                  {t('active.done')}
+                <Button
+                  size="lg"
+                  className="flex-1"
+                  onClick={side === "left" ? advanceExerciseSide : completeSet}
+                >
+                  {side === "left" ? t('active.nextSide') : t('active.done')}
                 </Button>
               </div>
             </div>

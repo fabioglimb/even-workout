@@ -40,8 +40,8 @@ function completeDisplay(state: ActiveWorkoutState, lang: AppLanguage) {
 }
 
 function formatExercisePrescription(exercise: Workout['exercises'][0], lang: AppLanguage): string {
-  if (exercise.reps !== null) return `${exercise.reps} ${t('glass.reps', lang)}`;
-  return `${exercise.durationSeconds}s`;
+  const base = exercise.reps !== null ? `${exercise.reps} ${t('glass.reps', lang)}` : `${exercise.durationSeconds}s`;
+  return exercise.unilateral ? `${base} L/R` : base;
 }
 
 function withSpacerRows(lines: string[]): string[] {
@@ -192,7 +192,8 @@ export const activeScreen: GlassScreen<WorkoutSnapshot, WorkoutActions> = {
         lines.push(line(tl, 'normal'));
       }
     } else {
-      const rep = exercise?.reps ? `${exercise.reps} ${t('glass.reps', lang)}` : `${exercise?.durationSeconds}s`;
+      const repBase = exercise?.reps ? `${exercise.reps} ${t('glass.reps', lang)}` : `${exercise?.durationSeconds}s`;
+      const rep = exercise?.unilateral ? `${repBase} L/R` : repBase;
       lines.push(line(`${t('glass.set', lang)} ${state.currentSet}/${exercise?.sets}  ${rep}`, 'normal'));
     }
 

@@ -256,6 +256,46 @@ const translations: Record<string, Record<AppLanguage, string>> = {
     en: 'Set', it: 'Serie', es: 'Serie', fr: 'Série', de: 'Satz',
     pt: 'Série', ja: 'セット', zh: '组', ko: '세트', ru: 'Подход',
   },
+  'editor.exerciseN': {
+    en: 'Exercise {n}', it: 'Esercizio {n}', es: 'Ejercicio {n}', fr: 'Exercice {n}', de: 'Übung {n}',
+    pt: 'Exercício {n}', ja: 'エクササイズ {n}', zh: '练习 {n}', ko: '운동 {n}', ru: 'Упражнение {n}',
+  },
+  'editor.moveUp': {
+    en: 'Move up', it: 'Sposta su', es: 'Subir', fr: 'Monter', de: 'Nach oben',
+    pt: 'Mover para cima', ja: '上へ', zh: '上移', ko: '위로', ru: 'Вверх',
+  },
+  'editor.moveDown': {
+    en: 'Move down', it: 'Sposta giù', es: 'Bajar', fr: 'Descendre', de: 'Nach unten',
+    pt: 'Mover para baixo', ja: '下へ', zh: '下移', ko: '아래로', ru: 'Вниз',
+  },
+  'editor.unilateral': {
+    en: 'Unilateral (per side)', it: 'Unilaterale (per lato)', es: 'Unilateral (por lado)', fr: 'Unilatéral (par côté)', de: 'Unilateral (pro Seite)',
+    pt: 'Unilateral (por lado)', ja: '片側ずつ', zh: '单侧（每侧）', ko: '한쪽씩', ru: 'Односторонн. (на сторону)',
+  },
+  'editor.unilateralTimed': {
+    en: 'Unilateral — time each side', it: 'Unilaterale — cronometra ogni lato', es: 'Unilateral — cronometra cada lado', fr: 'Unilatéral — chrono par côté', de: 'Unilateral — jede Seite stoppen',
+    pt: 'Unilateral — cronometrar cada lado', ja: '片側ずつ計測', zh: '单侧 — 每侧计时', ko: '한쪽씩 — 측별 타이머', ru: 'Односторонн. — таймер на сторону',
+  },
+  'editor.notes': {
+    en: 'Notes', it: 'Note', es: 'Notas', fr: 'Notes', de: 'Notizen',
+    pt: 'Notas', ja: 'メモ', zh: '备注', ko: '메모', ru: 'Заметки',
+  },
+  'editor.notesPlaceholder': {
+    en: 'Form cues, tempo, reminders…', it: 'Tecnica, tempo, promemoria…', es: 'Técnica, tempo, recordatorios…', fr: 'Technique, tempo, rappels…', de: 'Technik, Tempo, Hinweise…',
+    pt: 'Técnica, ritmo, lembretes…', ja: 'フォーム・テンポ・メモ…', zh: '动作要点、节奏、提醒…', ko: '자세, 템포, 메모…', ru: 'Техника, темп, заметки…',
+  },
+  'editor.addPhoto': {
+    en: 'Add photo', it: 'Aggiungi foto', es: 'Añadir foto', fr: 'Ajouter une photo', de: 'Foto hinzufügen',
+    pt: 'Adicionar foto', ja: '写真を追加', zh: '添加照片', ko: '사진 추가', ru: 'Добавить фото',
+  },
+  'editor.changePhoto': {
+    en: 'Change photo', it: 'Cambia foto', es: 'Cambiar foto', fr: 'Changer la photo', de: 'Foto ändern',
+    pt: 'Alterar foto', ja: '写真を変更', zh: '更换照片', ko: '사진 변경', ru: 'Изменить фото',
+  },
+  'editor.removePhoto': {
+    en: 'Remove photo', it: 'Rimuovi foto', es: 'Quitar foto', fr: 'Retirer la photo', de: 'Foto entfernen',
+    pt: 'Remover foto', ja: '写真を削除', zh: '移除照片', ko: '사진 삭제', ru: 'Удалить фото',
+  },
   'editor.secs': {
     en: 'Secs', it: 'Sec', es: 'Seg', fr: 'Sec', de: 'Sek',
     pt: 'Seg', ja: '秒', zh: '秒', ko: '초', ru: 'Сек',
@@ -329,6 +369,22 @@ const translations: Record<string, Record<AppLanguage, string>> = {
   'active.done': {
     en: 'Done', it: 'Fatto', es: 'Hecho', fr: 'Terminé', de: 'Fertig',
     pt: 'Pronto', ja: '完了', zh: '完成', ko: '완료', ru: 'Готово',
+  },
+  'active.leftSide': {
+    en: 'Left side', it: 'Lato sinistro', es: 'Lado izquierdo', fr: 'Côté gauche', de: 'Linke Seite',
+    pt: 'Lado esquerdo', ja: '左側', zh: '左侧', ko: '왼쪽', ru: 'Левая сторона',
+  },
+  'active.rightSide': {
+    en: 'Right side', it: 'Lato destro', es: 'Lado derecho', fr: 'Côté droit', de: 'Rechte Seite',
+    pt: 'Lado direito', ja: '右側', zh: '右侧', ko: '오른쪽', ru: 'Правая сторона',
+  },
+  'active.nextSide': {
+    en: 'Next side', it: 'Lato successivo', es: 'Siguiente lado', fr: 'Côté suivant', de: 'Nächste Seite',
+    pt: 'Próximo lado', ja: '次の側', zh: '下一侧', ko: '다음 쪽', ru: 'Следующая сторона',
+  },
+  'active.perSide': {
+    en: 'per side', it: 'per lato', es: 'por lado', fr: 'par côté', de: 'pro Seite',
+    pt: 'por lado', ja: '左右各', zh: '每侧', ko: '한쪽씩', ru: 'на сторону',
   },
   'active.exitConfirmTitle': {
     en: 'Exit workout?', it: 'Uscire dall\'allenamento?', es: '¿Salir del entrenamiento?', fr: 'Quitter l\'entraînement ?', de: 'Training beenden?',

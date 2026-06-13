@@ -23,7 +23,8 @@ function workoutDetailLines(workout: Workout, lang: AppLanguage): string[] {
   items.push(t('glass.exercises', lang));
   workout.exercises.forEach((ex, i) => {
     const rep = ex.reps ? `${ex.reps} ${t('glass.reps', lang)}` : `${ex.durationSeconds}s`;
-    items.push(truncate(`${i + 1}) ${ex.name}  ${ex.sets}x${rep}`, 54));
+    const side = ex.unilateral ? ' L/R' : '';
+    items.push(truncate(`${i + 1}) ${ex.name}  ${ex.sets}x${rep}${side}`, 54));
   });
   return items;
 }
@@ -32,7 +33,8 @@ function workoutExerciseLines(workout: Workout, lang: AppLanguage): string[] {
   return workout.exercises.map((ex, i) => {
     const rep = ex.reps ? `${ex.reps} ${t('glass.reps', lang)}` : `${ex.durationSeconds}s`;
     const load = ex.weightKg ? ` ${ex.weightKg}kg` : '';
-    return `${i + 1}) ${ex.name} ${ex.sets}x${rep}${load}`;
+    const side = ex.unilateral ? ' L/R' : '';
+    return `${i + 1}) ${ex.name} ${ex.sets}x${rep}${load}${side}`;
   });
 }
 

@@ -19,6 +19,12 @@ export interface Exercise {
   /** Optional per-set weight overrides. Falls back to `weightKg` when entry is missing. */
   setWeightsKg?: (number | null)[];
   restSeconds: number;
+  /** Free-text coaching notes shown during the workout. */
+  notes?: string;
+  /** Unilateral (per-side) exercise. For timed exercises the timer runs left then right. */
+  unilateral?: boolean;
+  /** Small downscaled image (data URL) shown on the phone app. Not rendered on glasses. */
+  image?: string;
 }
 
 export interface SessionRecord {
@@ -52,6 +58,8 @@ export interface ActiveWorkoutState {
   exerciseRemaining: number | null;
   /** True while the exercise countdown is actively ticking. */
   exerciseRunning: boolean;
+  /** For unilateral timed exercises: the side currently being timed. `null` otherwise. */
+  exerciseSide: "left" | "right" | null;
   startedAt: number;
   finishedAt: number | null;
   completedSets: number;

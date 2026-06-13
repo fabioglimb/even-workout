@@ -62,10 +62,23 @@ export default function WorkoutDetail() {
             <TableBody>
               {workout.exercises.map((ex, i) => (
                 <TableRow key={i}>
-                  <TableCell className="text-text">{ex.name}</TableCell>
+                  <TableCell className="text-text">
+                    <div className="flex items-center gap-2">
+                      {ex.image && (
+                        <img src={ex.image} alt="" className="w-7 h-7 object-cover rounded-[4px] shrink-0" />
+                      )}
+                      <div className="min-w-0">
+                        <div className="truncate">{ex.name}</div>
+                        {ex.notes && (
+                          <div className="text-[11px] tracking-[-0.11px] text-text-dim truncate">{ex.notes}</div>
+                        )}
+                      </div>
+                    </div>
+                  </TableCell>
                   <TableCell className="text-center text-text-dim">{ex.sets}</TableCell>
                   <TableCell className="text-center text-text-dim tabular-nums">
                     {ex.reps !== null ? `${ex.reps}` : `${ex.durationSeconds}s`}
+                    {ex.unilateral ? ' ⇄' : ''}
                   </TableCell>
                   <TableCell className="text-center text-text-dim tabular-nums">
                     {ex.setWeightsKg && ex.setWeightsKg.length > 0

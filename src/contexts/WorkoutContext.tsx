@@ -40,6 +40,7 @@ interface WorkoutContextValue {
   startExerciseTimer: () => void;
   pauseExerciseTimer: () => void;
   setExerciseRemaining: (value: number | ((prev: number) => number)) => void;
+  advanceExerciseSide: () => void;
   addWorkout: (workout: Workout) => void;
   updateWorkout: (workout: Workout) => void;
   removeWorkout: (id: string) => void;
@@ -54,6 +55,18 @@ interface WorkoutContextValue {
   setLanguage: (lang: AppLanguage) => void;
   favoriteIds: string[];
   toggleFavorite: (id: string) => void;
+}
+
+/** Initial per-exercise timer state when entering an exercise. */
+function initialExerciseTimer(ex: Exercise | undefined): {
+  exerciseRemaining: number | null;
+  exerciseSide: "left" | "right" | null;
+} {
+  const dur = ex?.durationSeconds ?? null;
+  return {
+    exerciseRemaining: dur,
+    exerciseSide: dur !== null && ex?.unilateral ? "left" : null,
+  };
 }
 
 const WorkoutContext = createContext<WorkoutContextValue | null>(null);
@@ -130,7 +143,7 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
       currentSet: 1,
       phase: "exercise",
       restRemaining: 0,
-      exerciseRemaining: firstExercise?.durationSeconds ?? null,
+      ...initialExerciseTimer(firstExercise),
       exerciseRunning: false,
       startedAt: Date.now(),
       finishedAt: null,
@@ -198,7 +211,7 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
             currentSet: 1,
             phase: "exercise",
             restRemaining: 0,
-            exerciseRemaining: nextEx?.durationSeconds ?? null,
+            ...initialExerciseTimer(nextEx),
             exerciseRunning: false,
           };
         }
@@ -208,7 +221,7 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
           currentSet: prev.currentSet + 1,
           phase: "exercise",
           restRemaining: 0,
-          exerciseRemaining: exercise.durationSeconds ?? null,
+          ...initialExerciseTimer(exercise),
           exerciseRunning: false,
         };
       }
@@ -244,7 +257,7 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
           currentSet: 1,
           phase: "exercise",
           restRemaining: 0,
-          exerciseRemaining: nextEx?.durationSeconds ?? null,
+          ...initialExerciseTimer(nextEx),
           exerciseRunning: false,
         };
       }
@@ -254,7 +267,7 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
         currentSet: prev.currentSet + 1,
         phase: "exercise",
         restRemaining: 0,
-        exerciseRemaining: exercise.durationSeconds ?? null,
+        ...initialExerciseTimer(exercise),
         exerciseRunning: false,
       };
     });
@@ -299,6 +312,23 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
     },
     []
   );
+
+  // Unilateral timed exercises: after the left side, reset the timer for the
+  // right side (paused, so the user can reposition) before completing the set.
+  const advanceExerciseSide = useCallback(() => {
+    setActiveState((prev) => {
+      if (!prev) return prev;
+      const workout = getWorkoutById(prev.workoutId, workoutsRef.current);
+      const exercise = workout?.exercises[prev.exerciseIndex];
+      if (!exercise || exercise.durationSeconds == null) return prev;
+      return {
+        ...prev,
+        exerciseSide: "right",
+        exerciseRemaining: exercise.durationSeconds,
+        exerciseRunning: false,
+      };
+    });
+  }, []);
 
   const addWorkout = useCallback((workout: Workout) => {
     setCustomWorkouts((prev) => {
@@ -417,6 +447,7 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
         startExerciseTimer,
         pauseExerciseTimer,
         setExerciseRemaining,
+        advanceExerciseSide,
         addWorkout,
         updateWorkout,
         removeWorkout,

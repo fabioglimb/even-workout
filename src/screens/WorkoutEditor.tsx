@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef, useCallback, type ReactNode, type TouchEvent as ReactTouchEvent } from "react";
 import { useParams, useNavigate } from "react-router";
 import { useWorkoutContext } from "../contexts/WorkoutContext";
-import { BottomActionBar, Button, Card, Checkbox, Input, Select, useDrawerHeader } from "even-toolkit/web";
-import { IcEditAdd, IcTrash } from "even-toolkit/web/icons/svg-icons";
+import { BottomActionBar, Button, Card, Checkbox, Input, Select, Textarea, useDrawerHeader } from "even-toolkit/web";
+import { IcEditAdd, IcTrash, IcGuideChevronDrillUp, IcGuideChevronDrillDown, IcFeatCamera } from "even-toolkit/web/icons/svg-icons";
 import type { Workout, Exercise } from "../types/workout";
 import { useTranslation } from "../hooks/useTranslation";
+import { fileToThumbnailDataUrl } from "../utils/image";
 
 const DELETE_WIDTH = 72;
 const SWIPE_THRESHOLD = 40;
@@ -24,6 +25,9 @@ type ExerciseDraft = {
   perSetWeights: boolean;
   restSeconds: string;
   mode: "reps" | "timed";
+  notes: string;
+  unilateral: boolean;
+  image: string;
 };
 
 function emptyExerciseDraft(): ExerciseDraft {
@@ -37,6 +41,9 @@ function emptyExerciseDraft(): ExerciseDraft {
     perSetWeights: false,
     restSeconds: "45",
     mode: "reps",
+    notes: "",
+    unilateral: false,
+    image: "",
   };
 }
 
@@ -57,6 +64,9 @@ function toExerciseDraft(exercise: Exercise): ExerciseDraft {
     perSetWeights: perSet,
     restSeconds: String(exercise.restSeconds),
     mode: exercise.durationSeconds != null ? "timed" : "reps",
+    notes: exercise.notes ?? "",
+    unilateral: Boolean(exercise.unilateral),
+    image: exercise.image ?? "",
   };
 }
 
@@ -87,6 +97,12 @@ function toExercise(draft: ExerciseDraft): Exercise {
   const setWeightsKg = draft.perSetWeights
     ? Array.from({ length: sets }, (_, i) => parseOptionalNumber(draft.setWeightsKg[i] ?? ""))
     : undefined;
+  const extras = {
+    ...(setWeightsKg ? { setWeightsKg } : {}),
+    ...(draft.notes.trim() ? { notes: draft.notes.trim() } : {}),
+    ...(draft.unilateral ? { unilateral: true } : {}),
+    ...(draft.image ? { image: draft.image } : {}),
+  };
 
   if (draft.mode === "timed") {
     return {
@@ -95,7 +111,7 @@ function toExercise(draft: ExerciseDraft): Exercise {
       reps: null,
       durationSeconds: parsePositiveInt(draft.durationSeconds, 1),
       weightKg,
-      ...(setWeightsKg ? { setWeightsKg } : {}),
+      ...extras,
       restSeconds,
     };
   }
@@ -106,7 +122,7 @@ function toExercise(draft: ExerciseDraft): Exercise {
     reps: parsePositiveInt(draft.reps, 1),
     durationSeconds: null,
     weightKg,
-    ...(setWeightsKg ? { setWeightsKg } : {}),
+    ...extras,
     restSeconds,
   };
 }
@@ -296,6 +312,30 @@ export default function WorkoutEditor() {
     setExercises((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const setUnilateral = (index: number, checked: boolean) => {
+    setExercises((prev) => prev.map((ex, i) => (i === index ? { ...ex, unilateral: checked } : ex)));
+  };
+
+  const moveExercise = (index: number, dir: -1 | 1) => {
+    setExercises((prev) => {
+      const to = index + dir;
+      if (to < 0 || to >= prev.length) return prev;
+      const next = [...prev];
+      [next[index], next[to]] = [next[to], next[index]];
+      return next;
+    });
+  };
+
+  const handleImagePick = async (index: number, file: File | undefined) => {
+    if (!file) return;
+    try {
+      const dataUrl = await fileToThumbnailDataUrl(file);
+      setExercises((prev) => prev.map((ex, i) => (i === index ? { ...ex, image: dataUrl } : ex)));
+    } catch {
+      // Ignore unreadable/invalid images.
+    }
+  };
+
   const addExercise = () => {
     setExercises((prev) => [...prev, emptyExerciseDraft()]);
   };
@@ -386,6 +426,31 @@ export default function WorkoutEditor() {
               <SwipeDeleteCard onDelete={exercises.length > 1 ? () => removeExercise(i) : undefined}>
                 <div className="px-3 py-3 bg-surface">
                   <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] tracking-[-0.11px] text-text-dim font-normal uppercase">
+                        {t('editor.exerciseN').replace('{n}', String(i + 1))}
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          disabled={i === 0}
+                          onClick={() => moveExercise(i, -1)}
+                          aria-label={t('editor.moveUp')}
+                        >
+                          <IcGuideChevronDrillUp width={16} height={16} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          disabled={i === exercises.length - 1}
+                          onClick={() => moveExercise(i, 1)}
+                          aria-label={t('editor.moveDown')}
+                        >
+                          <IcGuideChevronDrillDown width={16} height={16} />
+                        </Button>
+                      </div>
+                    </div>
                     <div>
                       <span className="text-[11px] tracking-[-0.11px] text-text-dim font-normal">{t('editor.name')}</span>
                       <div className="mt-1">
@@ -485,6 +550,46 @@ export default function WorkoutEditor() {
                           onValueChange={(val) => toggleExerciseType(i, val === "timed")}
                         />
                       </div>
+                    </div>
+                    <Checkbox
+                      checked={ex.unilateral}
+                      onChange={(checked) => setUnilateral(i, checked)}
+                      label={isTimed ? t('editor.unilateralTimed') : t('editor.unilateral')}
+                    />
+                    <div>
+                      <span className="text-[11px] tracking-[-0.11px] text-text-dim font-normal">{t('editor.notes')}</span>
+                      <Textarea
+                        className="mt-1"
+                        rows={2}
+                        placeholder={t('editor.notesPlaceholder')}
+                        value={ex.notes}
+                        onChange={(e) => updateExercise(i, "notes", e.target.value)}
+                      />
+                    </div>
+                    <div className="flex items-center gap-3">
+                      {ex.image ? (
+                        <img src={ex.image} alt="" className="w-12 h-12 object-cover rounded-[4px]" />
+                      ) : null}
+                      <label className="inline-flex items-center gap-2 px-3 h-9 rounded-[6px] bg-surface-light text-text text-[13px] tracking-[-0.13px] cursor-pointer hover:bg-surface-lighter">
+                        <IcFeatCamera width={16} height={16} />
+                        {ex.image ? t('editor.changePhoto') : t('editor.addPhoto')}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => handleImagePick(i, e.target.files?.[0])}
+                        />
+                      </label>
+                      {ex.image && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => updateExercise(i, "image", "")}
+                          aria-label={t('editor.removePhoto')}
+                        >
+                          <IcTrash width={16} height={16} />
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </div>
