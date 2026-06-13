@@ -3,12 +3,13 @@ import { useNavigate } from "react-router";
 import { useWorkoutContext } from "../contexts/WorkoutContext";
 import { WorkoutCard } from "../components/shared/WorkoutCard";
 import { Button, useDrawerHeader } from "even-toolkit/web";
+import { Skeleton } from "even-toolkit/web/skeleton";
 import { IcEditAdd } from "even-toolkit/web/icons/svg-icons";
 import { useTranslation } from "../hooks/useTranslation";
 
 export default function WorkoutList() {
   const navigate = useNavigate();
-  const { allWorkouts, removeWorkout, moveWorkout, favoriteIds, toggleFavorite } = useWorkoutContext();
+  const { allWorkouts, removeWorkout, moveWorkout, favoriteIds, toggleFavorite, loaded } = useWorkoutContext();
   const { t } = useTranslation();
 
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -110,6 +111,18 @@ export default function WorkoutList() {
       </Button>
     ),
   });
+
+  // While the storage bridge is still loading, show placeholders instead of a
+  // flash of preset workouts before the user's real data arrives.
+  if (!loaded) {
+    return (
+      <div className="px-3 pt-2 pb-8 flex flex-col gap-3">
+        {[0, 1, 2].map((i) => (
+          <Skeleton key={i} height={96} rounded="default" />
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="px-3 pt-2 pb-8 flex flex-col gap-3">
