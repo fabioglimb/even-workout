@@ -500,7 +500,7 @@ export default function WorkoutEditor() {
                         />
                       </div>
                     </div>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-3 gap-2 items-start">
                       <div>
                         <span className="text-[11px] tracking-[-0.11px] text-text-dim font-normal">{t('editor.sets')}</span>
                         <Input
@@ -548,7 +548,7 @@ export default function WorkoutEditor() {
                       label={t('editor.perSetWeight')}
                     />
                     {ex.perSetWeights && (
-                      <div className="grid grid-cols-3 gap-2">
+                      <div className="grid grid-cols-3 gap-2 items-start">
                         {Array.from({ length: parsePositiveInt(ex.sets, 1) }, (_, setIdx) => (
                           <div key={setIdx}>
                             <span className="text-[11px] tracking-[-0.11px] text-text-dim font-normal">

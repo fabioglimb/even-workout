@@ -11,6 +11,7 @@ export interface WorkoutSnapshot {
   flashPhase: boolean;
   language: AppLanguage;
   favoriteIds: string[];
+  pendingExit: boolean;
 }
 
 export interface WorkoutActions {
@@ -21,6 +22,8 @@ export interface WorkoutActions {
   finishWorkout: () => void;
   startExerciseTimer: () => void;
   pauseExerciseTimer: () => void;
+  requestExit: () => void;
+  cancelExit: () => void;
 }
 
 export function formatDuration(ms: number): string {

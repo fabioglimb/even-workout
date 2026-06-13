@@ -19,6 +19,12 @@ const REST_LEFT_WIDTH = ACTIVE_LEFT_WIDTH;
 const REST_RIGHT_WIDTH = ACTIVE_RIGHT_WIDTH;
 const REST_LAYOUT = ACTIVE_LAYOUT;
 
+// Exit-confirmation buttons. Cancel is first so the default highlight (and an
+// accidental immediate select) backs out rather than discards the workout.
+function getExitButtons(lang: AppLanguage): string[] {
+  return [t('glass.cancel', lang), t('glass.exitConfirm', lang)];
+}
+
 function getActiveButtons(state: ActiveWorkoutState, workout: Workout, lang: AppLanguage): string[] {
   if (state.phase === 'rest') return [t('glass.skipRest', lang)];
   const exercise = workout.exercises[state.exerciseIndex];
@@ -157,6 +163,20 @@ export function buildActiveSplit(snapshot: WorkoutSnapshot, nav: { highlightedIn
     };
   }
 
+  // Exit confirmation (double-tap/back during an active workout).
+  if (snapshot.pendingExit) {
+    const exitButtons = getExitButtons(lang);
+    const exitIdx = clampIndex(nav.highlightedIndex, exitButtons.length);
+    return {
+      header: buildSplitHeader(t('glass.exitTitle', lang), buildActionBar(exitButtons, exitIdx, null, snapshot.flashPhase), false),
+      panes: [
+        buildPaneText([t('glass.exitDesc', lang)], ACTIVE_LEFT_WIDTH, 0),
+        buildPaneText([`◆ ${state.completedSets}/${state.totalSets}`, t('glass.sets', lang)], ACTIVE_RIGHT_WIDTH, 0),
+      ],
+      layout: ACTIVE_LAYOUT,
+    };
+  }
+
   const exercise = workout.exercises[state.exerciseIndex];
   const buttons = getActiveButtons(state, workout, lang);
   const selectedButtonIndex = clampIndex(nav.highlightedIndex, buttons.length);
@@ -193,6 +213,17 @@ export const activeScreen: GlassScreen<WorkoutSnapshot, WorkoutActions> = {
 
     if (state.completedSets >= state.totalSets) {
       return completeDisplay(state, lang);
+    }
+
+    if (snapshot.pendingExit) {
+      const exitButtons = getExitButtons(lang);
+      const exitIdx = clampIndex(nav.highlightedIndex, exitButtons.length);
+      return {
+        lines: [
+          ...glassHeader(t('glass.exitTitle', lang), buildActionBar(exitButtons, exitIdx, null, snapshot.flashPhase)),
+          line(t('glass.exitDesc', lang), 'normal'),
+        ],
+      };
     }
 
     const exercise = workout.exercises[state.exerciseIndex];
@@ -250,6 +281,31 @@ export const activeScreen: GlassScreen<WorkoutSnapshot, WorkoutActions> = {
       return nav;
     }
 
+    // Exit-confirmation mode: a back/double-tap during the workout shows a
+    // confirm view rather than discarding progress immediately.
+    if (snapshot.pendingExit) {
+      const exitButtons = getExitButtons(lang);
+      if (action.type === 'HIGHLIGHT_MOVE') {
+        const idx = clampIndex(nav.highlightedIndex, exitButtons.length);
+        return { ...nav, highlightedIndex: moveHighlight(idx, action.direction, exitButtons.length - 1) };
+      }
+      if (action.type === 'SELECT_HIGHLIGHTED') {
+        const selected = exitButtons[clampIndex(nav.highlightedIndex, exitButtons.length)];
+        if (selected === t('glass.exitConfirm', lang)) {
+          ctx.finishWorkout();
+          ctx.navigate(`/workout/${workout.id}`);
+          return { ...nav, highlightedIndex: 0 };
+        }
+        ctx.cancelExit();
+        return { ...nav, highlightedIndex: 0 };
+      }
+      if (action.type === 'GO_BACK') {
+        ctx.cancelExit();
+        return { ...nav, highlightedIndex: 0 };
+      }
+      return nav;
+    }
+
     const buttons = getActiveButtons(state, workout, lang);
 
     if (action.type === 'HIGHLIGHT_MOVE') {
@@ -282,9 +338,9 @@ export const activeScreen: GlassScreen<WorkoutSnapshot, WorkoutActions> = {
       return nav;
     }
     if (action.type === 'GO_BACK') {
-      ctx.finishWorkout();
-      ctx.navigate(`/workout/${workout.id}`);
-      return nav;
+      // Don't discard the workout on the first back — ask for confirmation.
+      ctx.requestExit();
+      return { ...nav, highlightedIndex: 0 };
     }
     return nav;
   },

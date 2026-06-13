@@ -554,6 +554,22 @@ const translations: Record<string, Record<AppLanguage, string>> = {
     en: 'Stop', it: 'Stop', es: 'Parar', fr: 'Stop', de: 'Stopp',
     pt: 'Parar', ja: '停止', zh: '停止', ko: '정지', ru: 'Стоп',
   },
+  'glass.exitTitle': {
+    en: 'Exit workout?', it: 'Uscire?', es: '¿Salir?', fr: 'Quitter ?', de: 'Beenden?',
+    pt: 'Sair?', ja: '終了？', zh: '退出？', ko: '종료?', ru: 'Выйти?',
+  },
+  'glass.exitDesc': {
+    en: 'Progress will be lost', it: 'I progressi andranno persi', es: 'Se perderá el progreso', fr: 'Progression perdue', de: 'Fortschritt geht verloren',
+    pt: 'O progresso será perdido', ja: '進捗は失われます', zh: '进度将丢失', ko: '진행 상황이 사라집니다', ru: 'Прогресс будет потерян',
+  },
+  'glass.exitConfirm': {
+    en: 'Exit', it: 'Esci', es: 'Salir', fr: 'Quitter', de: 'Beenden',
+    pt: 'Sair', ja: '終了', zh: '退出', ko: '종료', ru: 'Выйти',
+  },
+  'glass.cancel': {
+    en: 'Cancel', it: 'Annulla', es: 'Cancelar', fr: 'Annuler', de: 'Abbr.',
+    pt: 'Cancelar', ja: 'キャンセル', zh: '取消', ko: '취소', ru: 'Отмена',
+  },
   'glass.finish': {
     en: 'Finish', it: 'Fine', es: 'Terminar', fr: 'Terminer', de: 'Beenden',
     pt: 'Terminar', ja: '終了', zh: '结束', ko: '완료', ru: 'Завершить',

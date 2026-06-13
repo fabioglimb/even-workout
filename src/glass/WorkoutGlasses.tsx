@@ -29,6 +29,9 @@ export function WorkoutGlasses() {
     finishWorkout,
     startExerciseTimer,
     pauseExerciseTimer,
+    pendingExit,
+    requestExit,
+    cancelExit,
     language,
     favoriteIds,
   } = useWorkoutContext();
@@ -53,6 +56,7 @@ export function WorkoutGlasses() {
     flashPhase: false,
     language,
     favoriteIds,
+    pendingExit,
   };
   snapshotRef.current = snapshot;
 
@@ -67,8 +71,10 @@ export function WorkoutGlasses() {
     finishWorkout,
     startExerciseTimer,
     pauseExerciseTimer,
+    requestExit,
+    cancelExit,
   });
-  ctxRef.current = { navigate, startWorkout, completeSet, skipRest, finishWorkout, startExerciseTimer, pauseExerciseTimer };
+  ctxRef.current = { navigate, startWorkout, completeSet, skipRest, finishWorkout, startExerciseTimer, pauseExerciseTimer, requestExit, cancelExit };
 
   // Wrap the router's onGlassAction to inject context
   const handleGlassAction = useCallback(

@@ -41,6 +41,9 @@ interface WorkoutContextValue {
   pauseExerciseTimer: () => void;
   setExerciseRemaining: (value: number | ((prev: number) => number)) => void;
   advanceExerciseSide: () => void;
+  pendingExit: boolean;
+  requestExit: () => void;
+  cancelExit: () => void;
   addWorkout: (workout: Workout) => void;
   updateWorkout: (workout: Workout) => void;
   removeWorkout: (id: string) => void;
@@ -79,6 +82,8 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<AppLanguage>('en');
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [loaded, setLoaded] = useState(false);
+  // Glasses-side exit confirmation (no native modal API on G2 — confirm in-app).
+  const [pendingExit, setPendingExit] = useState(false);
 
   // Keep a ref to the latest customWorkouts so sync callbacks (state updaters) can read it
   const workoutsRef = useRef(customWorkouts);
@@ -136,6 +141,7 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
   const startWorkout = useCallback((workoutId: string) => {
     const workout = getWorkoutById(workoutId, workoutsRef.current);
     if (!workout) return;
+    setPendingExit(false);
     const firstExercise: Exercise | undefined = workout.exercises[0];
     setActiveState({
       workoutId,
@@ -275,7 +281,11 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
 
   const finishWorkout = useCallback(() => {
     setActiveState(null);
+    setPendingExit(false);
   }, []);
+
+  const requestExit = useCallback(() => setPendingExit(true), []);
+  const cancelExit = useCallback(() => setPendingExit(false), []);
 
   const setRestRemaining = useCallback(
     (value: number | ((prev: number) => number)) => {
@@ -448,6 +458,9 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
         pauseExerciseTimer,
         setExerciseRemaining,
         advanceExerciseSide,
+        pendingExit,
+        requestExit,
+        cancelExit,
         addWorkout,
         updateWorkout,
         removeWorkout,
