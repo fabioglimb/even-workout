@@ -1,11 +1,23 @@
-const MAX_DIM = 96; // small thumbnail — phone-only visual aid
-const JPEG_QUALITY = 0.6;
+import type { Exercise } from "../types/workout";
+
+/** All images for an exercise, falling back to the legacy single `image` field. */
+export function getExerciseImages(ex: Exercise): string[] {
+  if (ex.images && ex.images.length > 0) return ex.images;
+  return ex.image ? [ex.image] : [];
+}
+
+// Max edge of the stored image. Big enough to look sharp in the full-screen
+// zoom modal, while still downscaled + JPEG-compressed to stay reasonable in
+// Even Hub storage (~40-90 KB each). Small thumbnails downscale from this.
+const MAX_DIM = 720;
+const JPEG_QUALITY = 0.78;
 
 /**
- * Read an image file and return a small downscaled JPEG data URL.
+ * Read an image file and return a downscaled JPEG data URL.
  *
- * Exercise images are a phone-only visual aid (G2 glasses are text-only), so we
- * keep them tiny (~3-6 KB) to stay well within the Even Hub storage budget.
+ * Exercise images are a phone-only visual aid (G2 glasses are text-only). They
+ * are displayed as small thumbnails but can be tapped to zoom full-screen, so
+ * we keep a viewable resolution rather than a tiny icon.
  */
 export function fileToThumbnailDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {

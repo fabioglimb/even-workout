@@ -32,6 +32,8 @@ export function WorkoutGlasses() {
     pendingExit,
     requestExit,
     cancelExit,
+    notesVisible,
+    toggleNotes,
     language,
     favoriteIds,
   } = useWorkoutContext();
@@ -57,6 +59,7 @@ export function WorkoutGlasses() {
     language,
     favoriteIds,
     pendingExit,
+    notesVisible,
   };
   snapshotRef.current = snapshot;
 
@@ -73,8 +76,9 @@ export function WorkoutGlasses() {
     pauseExerciseTimer,
     requestExit,
     cancelExit,
+    toggleNotes,
   });
-  ctxRef.current = { navigate, startWorkout, completeSet, skipRest, finishWorkout, startExerciseTimer, pauseExerciseTimer, requestExit, cancelExit };
+  ctxRef.current = { navigate, startWorkout, completeSet, skipRest, finishWorkout, startExerciseTimer, pauseExerciseTimer, requestExit, cancelExit, toggleNotes };
 
   // Wrap the router's onGlassAction to inject context
   const handleGlassAction = useCallback(
@@ -90,6 +94,7 @@ export function WorkoutGlasses() {
     onGlassAction: handleGlassAction,
     deriveScreen,
     appName: 'ER WORKOUT',
+    headerClock: true,
     getPageMode: (screen) => {
       if (screen === 'workout-list') return 'home';
       if (screen === 'workout-detail' || screen === 'active') return 'split';

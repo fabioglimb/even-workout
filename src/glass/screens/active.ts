@@ -15,7 +15,9 @@ import { buildPaneText, buildSplitHeader, formatDuration } from '../shared';
 
 const ACTIVE_LEFT_WIDTH = 17;
 const ACTIVE_RIGHT_WIDTH = 30;
-const ACTIVE_LAYOUT = { leftWidth: 240 };
+// headerHeight fits 2 lines (title + separator); the default 56px clipped the
+// 2nd line and triggered a vertical scroll indicator on the right.
+const ACTIVE_LAYOUT = { leftWidth: 240, headerHeight: 72 };
 const REST_LEFT_WIDTH = ACTIVE_LEFT_WIDTH;
 const REST_RIGHT_WIDTH = ACTIVE_RIGHT_WIDTH;
 const REST_LAYOUT = ACTIVE_LAYOUT;
@@ -29,12 +31,14 @@ function getExitButtons(lang: AppLanguage): string[] {
 function getActiveButtons(state: ActiveWorkoutState, workout: Workout, lang: AppLanguage): string[] {
   if (state.phase === 'rest') return [t('glass.skipRest', lang)];
   const exercise = workout.exercises[state.exerciseIndex];
+  // A "Note" button is shown when the current exercise has notes.
+  const noteBtn = exercise?.notes ? [t('glass.note', lang)] : [];
   // Timed exercises get a Start/Stop button before Done and Skip.
   if (exercise?.durationSeconds != null) {
     const toggle = state.exerciseRunning ? t('glass.pause', lang) : t('glass.start', lang);
-    return [toggle, t('glass.done', lang), t('glass.skip', lang)];
+    return [toggle, t('glass.done', lang), t('glass.skip', lang), ...noteBtn];
   }
-  return [t('glass.done', lang), t('glass.skip', lang)];
+  return [t('glass.done', lang), t('glass.skip', lang), ...noteBtn];
 }
 
 function completeDisplay(state: ActiveWorkoutState, lang: AppLanguage) {
@@ -186,6 +190,18 @@ export function buildActiveSplit(snapshot: WorkoutSnapshot, nav: { highlightedIn
   const actionBar = buildActionBar(buttons, selectedButtonIndex, null, snapshot.flashPhase);
   const header = buildSplitHeader(exercise?.name ?? '', actionBar, false);
 
+  // Notes view: show the exercise's note instead of the exercise panes.
+  if (snapshot.notesVisible && exercise?.notes) {
+    return {
+      header,
+      panes: [
+        buildPaneText([exercise.notes], ACTIVE_LEFT_WIDTH, 0),
+        buildPaneText([`◆ ${t('glass.note', lang)}`], ACTIVE_RIGHT_WIDTH, 0),
+      ],
+      layout: ACTIVE_LAYOUT,
+    };
+  }
+
   if (state.phase === 'rest') {
     return {
       header,
@@ -234,6 +250,13 @@ export const activeScreen: GlassScreen<WorkoutSnapshot, WorkoutActions> = {
     const btnIdx = clampIndex(nav.highlightedIndex, buttons.length);
     const actionBar = buildActionBar(buttons, btnIdx, null, snapshot.flashPhase);
     const lines = [...glassHeader(exercise?.name ?? '', actionBar)];
+
+    if (snapshot.notesVisible && exercise?.notes) {
+      lines.push(line(t('glass.note', lang), 'meta'));
+      lines.push(line('', 'normal'));
+      lines.push(line(exercise.notes, 'normal'));
+      return { lines };
+    }
 
     if (state.phase === 'rest') {
       const restTotal = exercise?.restSeconds ?? 30;
@@ -338,9 +361,18 @@ export const activeScreen: GlassScreen<WorkoutSnapshot, WorkoutActions> = {
         ctx.skipRest();
         return nav;
       }
+      if (selected === t('glass.note', lang)) {
+        ctx.toggleNotes();
+        return nav;
+      }
       return nav;
     }
     if (action.type === 'GO_BACK') {
+      // While the note is open, a back/double-tap just closes it.
+      if (snapshot.notesVisible) {
+        ctx.toggleNotes();
+        return nav;
+      }
       // Don't discard the workout on the first back — ask for confirmation.
       ctx.requestExit();
       return { ...nav, highlightedIndex: 0 };

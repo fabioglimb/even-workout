@@ -27,7 +27,7 @@ type ExerciseDraft = {
   mode: "reps" | "timed";
   notes: string;
   unilateral: boolean;
-  image: string;
+  images: string[];
 };
 
 function emptyExerciseDraft(): ExerciseDraft {
@@ -43,7 +43,7 @@ function emptyExerciseDraft(): ExerciseDraft {
     mode: "reps",
     notes: "",
     unilateral: false,
-    image: "",
+    images: [],
   };
 }
 
@@ -66,7 +66,9 @@ function toExerciseDraft(exercise: Exercise): ExerciseDraft {
     mode: exercise.durationSeconds != null ? "timed" : "reps",
     notes: exercise.notes ?? "",
     unilateral: Boolean(exercise.unilateral),
-    image: exercise.image ?? "",
+    images: exercise.images && exercise.images.length > 0
+      ? exercise.images
+      : (exercise.image ? [exercise.image] : []),
   };
 }
 
@@ -101,7 +103,7 @@ function toExercise(draft: ExerciseDraft): Exercise {
     ...(setWeightsKg ? { setWeightsKg } : {}),
     ...(draft.notes.trim() ? { notes: draft.notes.trim() } : {}),
     ...(draft.unilateral ? { unilateral: true } : {}),
-    ...(draft.image ? { image: draft.image } : {}),
+    ...(draft.images.length > 0 ? { images: draft.images } : {}),
   };
 
   if (draft.mode === "timed") {
@@ -237,6 +239,7 @@ export default function WorkoutEditor() {
   const [difficulty, setDifficulty] = useState<Workout["difficulty"]>("beginner");
   const [target, setTarget] = useState("");
   const [estimatedMinutesInput, setEstimatedMinutesInput] = useState("30");
+  const [workoutImage, setWorkoutImage] = useState("");
   const [exercises, setExercises] = useState<ExerciseDraft[]>([emptyExerciseDraft()]);
 
   const [titleError, setTitleError] = useState(false);
@@ -257,6 +260,7 @@ export default function WorkoutEditor() {
         setDifficulty(existing.difficulty);
         setTarget(existing.target);
         setEstimatedMinutesInput(String(existing.estimatedMinutes));
+        setWorkoutImage(existing.image ?? "");
         setExercises(existing.exercises.map(toExerciseDraft));
       } else {
         navigate("/");
@@ -336,11 +340,26 @@ export default function WorkoutEditor() {
     });
   };
 
-  const handleImagePick = async (index: number, file: File | undefined) => {
+  const handleAddExerciseImage = async (index: number, file: File | undefined) => {
     if (!file) return;
     try {
       const dataUrl = await fileToThumbnailDataUrl(file);
-      setExercises((prev) => prev.map((ex, i) => (i === index ? { ...ex, image: dataUrl } : ex)));
+      setExercises((prev) => prev.map((ex, i) => (i === index ? { ...ex, images: [...ex.images, dataUrl] } : ex)));
+    } catch {
+      // Ignore unreadable/invalid images.
+    }
+  };
+
+  const removeExerciseImage = (index: number, imgIdx: number) => {
+    setExercises((prev) =>
+      prev.map((ex, i) => (i === index ? { ...ex, images: ex.images.filter((_, k) => k !== imgIdx) } : ex)),
+    );
+  };
+
+  const handleWorkoutImage = async (file: File | undefined) => {
+    if (!file) return;
+    try {
+      setWorkoutImage(await fileToThumbnailDataUrl(file));
     } catch {
       // Ignore unreadable/invalid images.
     }
@@ -377,6 +396,7 @@ export default function WorkoutEditor() {
       target: target.trim() || "General",
       estimatedMinutes: parsePositiveInt(estimatedMinutesInput, 1),
       exercises: exercises.map(toExercise),
+      ...(workoutImage ? { image: workoutImage } : {}),
     };
 
     if (isEditing) {
@@ -441,6 +461,28 @@ export default function WorkoutEditor() {
             value={target}
             onChange={(e) => setTarget(e.target.value)}
           />
+        </FieldRow>
+        <FieldRow label={t('editor.coverPhoto')}>
+          <div className="flex items-center gap-3">
+            {workoutImage && (
+              <img src={workoutImage} alt="" className="w-12 h-12 object-cover rounded-[4px]" />
+            )}
+            <label className="inline-flex items-center gap-2 px-3 h-9 rounded-[6px] bg-surface-light text-text text-[13px] tracking-[-0.13px] cursor-pointer hover:bg-surface-lighter">
+              <IcFeatCamera width={16} height={16} />
+              {workoutImage ? t('editor.changePhoto') : t('editor.addPhoto')}
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => { handleWorkoutImage(e.target.files?.[0]); e.target.value = ''; }}
+              />
+            </label>
+            {workoutImage && (
+              <Button variant="ghost" size="icon" onClick={() => setWorkoutImage("")} aria-label={t('editor.removePhoto')}>
+                <IcTrash width={16} height={16} />
+              </Button>
+            )}
+          </div>
         </FieldRow>
       </Card>
 
@@ -605,30 +647,30 @@ export default function WorkoutEditor() {
                         onChange={(e) => updateExercise(i, "notes", e.target.value)}
                       />
                     </div>
-                    <div className="flex items-center gap-3">
-                      {ex.image ? (
-                        <img src={ex.image} alt="" className="w-12 h-12 object-cover rounded-[4px]" />
-                      ) : null}
+                    <div className="flex flex-wrap items-center gap-2">
+                      {ex.images.map((src, imgIdx) => (
+                        <div key={imgIdx} className="relative">
+                          <img src={src} alt="" className="w-12 h-12 object-cover rounded-[4px]" />
+                          <button
+                            type="button"
+                            onClick={() => removeExerciseImage(i, imgIdx)}
+                            aria-label={t('editor.removePhoto')}
+                            className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-negative text-text-highlight flex items-center justify-center cursor-pointer"
+                          >
+                            <IcTrash width={12} height={12} />
+                          </button>
+                        </div>
+                      ))}
                       <label className="inline-flex items-center gap-2 px-3 h-9 rounded-[6px] bg-surface-light text-text text-[13px] tracking-[-0.13px] cursor-pointer hover:bg-surface-lighter">
                         <IcFeatCamera width={16} height={16} />
-                        {ex.image ? t('editor.changePhoto') : t('editor.addPhoto')}
+                        {ex.images.length > 0 ? t('editor.addAnotherPhoto') : t('editor.addPhoto')}
                         <input
                           type="file"
                           accept="image/*"
                           className="hidden"
-                          onChange={(e) => handleImagePick(i, e.target.files?.[0])}
+                          onChange={(e) => { handleAddExerciseImage(i, e.target.files?.[0]); e.target.value = ''; }}
                         />
                       </label>
-                      {ex.image && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => updateExercise(i, "image", "")}
-                          aria-label={t('editor.removePhoto')}
-                        >
-                          <IcTrash width={16} height={16} />
-                        </Button>
-                      )}
                     </div>
                   </div>
                 </div>

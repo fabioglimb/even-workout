@@ -8,6 +8,8 @@ export interface Workout {
   estimatedMinutes: number;
   target: string;
   exercises: Exercise[];
+  /** Optional cover photo (data URL), shown on the phone app. */
+  image?: string;
 }
 
 export interface Exercise {
@@ -23,8 +25,10 @@ export interface Exercise {
   notes?: string;
   /** Unilateral (per-side) exercise. For timed exercises the timer runs left then right. */
   unilateral?: boolean;
-  /** Small downscaled image (data URL) shown on the phone app. Not rendered on glasses. */
+  /** @deprecated single image — kept for backward compat; use `images`. */
   image?: string;
+  /** Downscaled images (data URLs) shown on the phone app. Not rendered on glasses. */
+  images?: string[];
 }
 
 export interface SessionRecord {

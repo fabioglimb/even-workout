@@ -12,6 +12,7 @@ export interface WorkoutSnapshot {
   language: AppLanguage;
   favoriteIds: string[];
   pendingExit: boolean;
+  notesVisible: boolean;
 }
 
 export interface WorkoutActions {
@@ -24,6 +25,7 @@ export interface WorkoutActions {
   pauseExerciseTimer: () => void;
   requestExit: () => void;
   cancelExit: () => void;
+  toggleNotes: () => void;
 }
 
 export function formatDuration(ms: number): string {
@@ -36,7 +38,10 @@ export function formatDuration(ms: number): string {
 export const SPLIT_HEADER_WIDTH = 28;
 export const SPLIT_LEFT_WIDTH = 21;
 export const SPLIT_RIGHT_WIDTH = 15;
-export const SPLIT_PANE_LINES = 8;
+// 7 visible lines: a 2-line header (72px) leaves the panes room for 7 lines on
+// the 288px display; padding to 8 made the pane content overflow and showed a
+// vertical scroll indicator.
+export const SPLIT_PANE_LINES = 7;
 const SPLIT_LINE_PREFIX = '  ';
 
 export function buildSplitHeader(title: string, actionBar?: string, truncateTitle = true): string {

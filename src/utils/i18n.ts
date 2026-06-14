@@ -288,6 +288,14 @@ const translations: Record<string, Record<AppLanguage, string>> = {
     en: 'Add photo', it: 'Aggiungi foto', es: 'Añadir foto', fr: 'Ajouter une photo', de: 'Foto hinzufügen',
     pt: 'Adicionar foto', ja: '写真を追加', zh: '添加照片', ko: '사진 추가', ru: 'Добавить фото',
   },
+  'editor.addAnotherPhoto': {
+    en: 'Add another', it: 'Aggiungi altra', es: 'Añadir otra', fr: 'Ajouter une autre', de: 'Weitere hinzufügen',
+    pt: 'Adicionar outra', ja: 'もう一枚追加', zh: '再加一张', ko: '더 추가', ru: 'Ещё одно',
+  },
+  'editor.coverPhoto': {
+    en: 'Cover photo', it: 'Foto di copertina', es: 'Foto de portada', fr: 'Photo de couverture', de: 'Titelbild',
+    pt: 'Foto de capa', ja: 'カバー写真', zh: '封面照片', ko: '커버 사진', ru: 'Обложка',
+  },
   'editor.changePhoto': {
     en: 'Change photo', it: 'Cambia foto', es: 'Cambiar foto', fr: 'Changer la photo', de: 'Foto ändern',
     pt: 'Alterar foto', ja: '写真を変更', zh: '更换照片', ko: '사진 변경', ru: 'Изменить фото',
@@ -569,6 +577,10 @@ const translations: Record<string, Record<AppLanguage, string>> = {
   'glass.cancel': {
     en: 'Cancel', it: 'Annulla', es: 'Cancelar', fr: 'Annuler', de: 'Abbr.',
     pt: 'Cancelar', ja: 'キャンセル', zh: '取消', ko: '취소', ru: 'Отмена',
+  },
+  'glass.note': {
+    en: 'Note', it: 'Nota', es: 'Nota', fr: 'Note', de: 'Notiz',
+    pt: 'Nota', ja: 'メモ', zh: '备注', ko: '메모', ru: 'Заметка',
   },
   'glass.finish': {
     en: 'Finish', it: 'Fine', es: 'Terminar', fr: 'Terminer', de: 'Beenden',

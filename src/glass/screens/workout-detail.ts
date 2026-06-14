@@ -8,11 +8,11 @@ import type { Workout } from '../../types/workout';
 import type { AppLanguage } from '../../utils/i18n';
 import { t } from '../../utils/i18n';
 import type { WorkoutSnapshot, WorkoutActions } from '../shared';
-import { buildPaneText, buildSplitHeader, wordWrap } from '../shared';
+import { buildPaneText, buildSplitHeader, wordWrap, SPLIT_PANE_LINES } from '../shared';
 
 const DETAIL_LEFT_WIDTH = 32;
 const DETAIL_RIGHT_WIDTH = 26;
-const DETAIL_LAYOUT = { leftWidth: 310 };
+const DETAIL_LAYOUT = { leftWidth: 310, headerHeight: 72 };
 
 function workoutDetailLines(workout: Workout, lang: AppLanguage): string[] {
   const items: string[] = [];
@@ -95,7 +95,7 @@ export function buildWorkoutDetailSplit(snapshot: WorkoutSnapshot, nav: { highli
 /** Max scroll position for workout detail content */
 export function workoutDetailLineCount(workout: Workout): number {
   const contentLength = workoutExerciseLines(workout, 'en').flatMap((line) => wordWrap(line, DETAIL_LEFT_WIDTH)).length;
-  return Math.max(0, contentLength - 8);
+  return Math.max(0, contentLength - SPLIT_PANE_LINES);
 }
 
 export const workoutDetailScreen: GlassScreen<WorkoutSnapshot, WorkoutActions> = {

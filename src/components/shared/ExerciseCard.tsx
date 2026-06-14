@@ -2,6 +2,8 @@ import { Card } from "even-toolkit/web";
 import type { Exercise } from "../../types/workout";
 import { useTranslation } from "../../hooks/useTranslation";
 import { getSetWeight } from "../../utils/weight";
+import { getExerciseImages } from "../../utils/image";
+import { ZoomableImage } from "./ZoomableImage";
 
 interface ExerciseCardProps {
   exercise: Exercise;
@@ -13,17 +15,20 @@ interface ExerciseCardProps {
 export function ExerciseCard({ exercise, currentSet, side }: ExerciseCardProps) {
   const { t } = useTranslation();
   const weight = getSetWeight(exercise, currentSet - 1);
+  const images = getExerciseImages(exercise);
   return (
     <Card variant="elevated" padding="lg" className="text-center w-full">
       <p className="text-[11px] tracking-[-0.11px] text-accent mb-2">
         {t('component.currentExercise')}
       </p>
-      {exercise.image && (
-        <img
-          src={exercise.image}
-          alt={exercise.name}
-          className="mx-auto mb-3 w-20 h-20 object-cover rounded-[6px]"
-        />
+      {images.length > 0 && (
+        <div className="flex justify-center mb-3">
+          <ZoomableImage
+            images={images}
+            alt={exercise.name}
+            className="w-20 h-20 object-cover rounded-[6px]"
+          />
+        </div>
       )}
       <h2 className="text-[20px] tracking-[-0.6px] text-text mb-4">
         {exercise.name}

@@ -44,6 +44,8 @@ interface WorkoutContextValue {
   pendingExit: boolean;
   requestExit: () => void;
   cancelExit: () => void;
+  notesVisible: boolean;
+  toggleNotes: () => void;
   addWorkout: (workout: Workout) => void;
   updateWorkout: (workout: Workout) => void;
   removeWorkout: (id: string) => void;
@@ -84,6 +86,8 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
   const [loaded, setLoaded] = useState(false);
   // Glasses-side exit confirmation (no native modal API on G2 — confirm in-app).
   const [pendingExit, setPendingExit] = useState(false);
+  // Glasses-side: show the current exercise's note instead of the exercise view.
+  const [notesVisible, setNotesVisible] = useState(false);
 
   // Keep a ref to the latest customWorkouts so sync callbacks (state updaters) can read it
   const workoutsRef = useRef(customWorkouts);
@@ -142,6 +146,7 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
     const workout = getWorkoutById(workoutId, workoutsRef.current);
     if (!workout) return;
     setPendingExit(false);
+    setNotesVisible(false);
     const firstExercise: Exercise | undefined = workout.exercises[0];
     setActiveState({
       workoutId,
@@ -159,6 +164,7 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const completeSet = useCallback(() => {
+    setNotesVisible(false);
     // Read current state to check if this completes the workout
     const current = activeState;
     if (current) {
@@ -243,6 +249,7 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
   }, [activeState]);
 
   const skipRest = useCallback(() => {
+    setNotesVisible(false);
     setActiveState((prev) => {
       if (!prev) return prev;
       const workout = getWorkoutById(prev.workoutId, workoutsRef.current);
@@ -282,10 +289,12 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
   const finishWorkout = useCallback(() => {
     setActiveState(null);
     setPendingExit(false);
+    setNotesVisible(false);
   }, []);
 
   const requestExit = useCallback(() => setPendingExit(true), []);
   const cancelExit = useCallback(() => setPendingExit(false), []);
+  const toggleNotes = useCallback(() => setNotesVisible((v) => !v), []);
 
   const setRestRemaining = useCallback(
     (value: number | ((prev: number) => number)) => {
@@ -461,6 +470,8 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
         pendingExit,
         requestExit,
         cancelExit,
+        notesVisible,
+        toggleNotes,
         addWorkout,
         updateWorkout,
         removeWorkout,

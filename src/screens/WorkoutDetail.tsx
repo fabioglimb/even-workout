@@ -5,6 +5,8 @@ import { useWorkoutContext } from "../contexts/WorkoutContext";
 import { Card, Button, Badge, EmptyState, ConfirmDialog, Table, TableHeader, TableBody, TableRow, TableHead, TableCell, useDrawerHeader } from "even-toolkit/web";
 import { IcFeatCalendar } from "even-toolkit/web/icons/svg-icons";
 import { DifficultyBadge } from "../components/shared/DifficultyBadge";
+import { ZoomableImage } from "../components/shared/ZoomableImage";
+import { getExerciseImages } from "../utils/image";
 import { formatDuration } from "../utils/format";
 import { useTranslation } from "../hooks/useTranslation";
 
@@ -38,6 +40,15 @@ export default function WorkoutDetail() {
   return (
     <>
       <div className="px-3 pb-8">
+        {workout.image && (
+          <div className="mt-3 mb-4">
+            <ZoomableImage
+              images={[workout.image]}
+              alt={workout.title}
+              className="w-full h-40 object-cover rounded-[6px]"
+            />
+          </div>
+        )}
         {/* Stats badges */}
         <div className="flex flex-wrap items-center gap-2 mt-3 mb-4">
           <DifficultyBadge difficulty={workout.difficulty} />
@@ -64,8 +75,8 @@ export default function WorkoutDetail() {
                 <TableRow key={i}>
                   <TableCell className="text-text">
                     <div className="flex items-center gap-2">
-                      {ex.image && (
-                        <img src={ex.image} alt="" className="w-7 h-7 object-cover rounded-[4px] shrink-0" />
+                      {getExerciseImages(ex).length > 0 && (
+                        <ZoomableImage images={getExerciseImages(ex)} alt={ex.name} className="w-7 h-7 object-cover rounded-[4px] shrink-0" />
                       )}
                       <div className="min-w-0">
                         <div className="truncate">{ex.name}</div>
