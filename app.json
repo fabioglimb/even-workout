@@ -9,7 +9,13 @@
   "permissions": [
     {
       "name": "network",
-      "desc": "Required for loading the even-toolkit design system assets"
+      "desc": "App framework and design-system rendering assets.",
+      "whitelist": [
+        "https://react.dev",
+        "https://reactrouter.com",
+        "http://www.w3.org",
+        "http://localhost"
+      ]
     }
   ],
   "supported_languages": [
