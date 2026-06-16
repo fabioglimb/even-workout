@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode, type TouchEvent as ReactTouchEvent } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router';
 import {
   Badge,
@@ -7,6 +7,7 @@ import {
   Card,
   EmptyState,
   Select,
+  SwipeToDelete,
   TimePicker,
   useDrawerHeader,
   type CalendarEvent,
@@ -16,10 +17,6 @@ import {
 import { IcFeatCalendar } from 'even-toolkit/web/icons/svg-icons';
 import { useWorkoutContext } from '../contexts/WorkoutContext';
 import { useTranslation } from '../hooks/useTranslation';
-
-const DELETE_WIDTH = 72;
-const SWIPE_THRESHOLD = 40;
-const DIRECTION_LOCK_PX = 10;
 
 function toDateKey(date: Date): string {
   const year = date.getFullYear();
@@ -70,85 +67,6 @@ function formatSelectedDate(date: Date): string {
     month: 'long',
     day: 'numeric',
   });
-}
-
-function SwipeDeleteRow({
-  children,
-  onDelete,
-}: {
-  children: ReactNode;
-  onDelete: () => void;
-}) {
-  const [offset, setOffset] = useState(0);
-  const [swiping, setSwiping] = useState(false);
-  const startX = useRef(0);
-  const startY = useRef(0);
-  const currentOffset = useRef(0);
-  const direction = useRef<'none' | 'horizontal' | 'vertical'>('none');
-
-  const onTouchStart = useCallback((e: ReactTouchEvent<HTMLDivElement>) => {
-    startX.current = e.touches[0].clientX;
-    startY.current = e.touches[0].clientY;
-    currentOffset.current = offset;
-    direction.current = 'none';
-    setSwiping(true);
-  }, [offset]);
-
-  const onTouchMove = useCallback((e: ReactTouchEvent<HTMLDivElement>) => {
-    if (!swiping) return;
-    const dx = e.touches[0].clientX - startX.current;
-    const dy = e.touches[0].clientY - startY.current;
-
-    if (direction.current === 'none') {
-      if (Math.abs(dx) > DIRECTION_LOCK_PX || Math.abs(dy) > DIRECTION_LOCK_PX) {
-        direction.current = Math.abs(dx) > Math.abs(dy) ? 'horizontal' : 'vertical';
-      }
-      return;
-    }
-
-    if (direction.current === 'vertical') return;
-    setOffset(Math.min(0, Math.max(-DELETE_WIDTH, currentOffset.current + dx)));
-  }, [swiping]);
-
-  const onTouchEnd = useCallback(() => {
-    if (!swiping) return;
-    setSwiping(false);
-    if (direction.current === 'vertical') return;
-    setOffset(offset < -SWIPE_THRESHOLD ? -DELETE_WIDTH : 0);
-  }, [offset, swiping]);
-
-  const handleDelete = useCallback(() => {
-    onDelete();
-    setOffset(0);
-    direction.current = 'none';
-  }, [onDelete]);
-
-  return (
-    <div className="relative overflow-hidden rounded-[6px]">
-      {offset < 0 && (
-        <button
-          type="button"
-          onClick={handleDelete}
-          className="absolute right-0 top-0 bottom-0 flex items-center justify-center bg-negative text-text-highlight cursor-pointer"
-          style={{ width: DELETE_WIDTH }}
-        >
-          {`Delete`}
-        </button>
-      )}
-      <div
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
-        onTouchCancel={onTouchEnd}
-        style={{
-          transform: `translateX(${offset}px)`,
-          transition: swiping ? 'none' : 'transform 200ms ease',
-        }}
-      >
-        {children}
-      </div>
-    </div>
-  );
 }
 
 export default function WorkoutCalendar() {
@@ -338,7 +256,7 @@ export default function WorkoutCalendar() {
                   <p className="text-[13px] tracking-[-0.13px] text-text-dim">{t('calendar.emptyDay')}</p>
                 </div>
               ) : selectedDayEntries.map(({ entry, workout }) => (
-                <SwipeDeleteRow key={entry.id} onDelete={() => removeScheduledWorkout(entry.id)}>
+                <SwipeToDelete key={entry.id} onDelete={() => removeScheduledWorkout(entry.id)}>
                   <div className="rounded-[6px] border border-border bg-surface-light px-4 py-3 flex items-center gap-3">
                     <div className="min-w-0 flex-1">
                       <p className="text-[15px] tracking-[-0.15px] text-text truncate">{workout.title}</p>
@@ -347,7 +265,7 @@ export default function WorkoutCalendar() {
                       </p>
                     </div>
                   </div>
-                </SwipeDeleteRow>
+                </SwipeToDelete>
               ))}
             </div>
           </>
