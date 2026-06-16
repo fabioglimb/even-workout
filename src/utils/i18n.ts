@@ -648,26 +648,26 @@ const translations: Record<string, Record<AppLanguage, string>> = {
     ja: 'セッションなし', zh: '暂无记录', ko: '세션 없음', ru: 'Нет сессий',
   },
   'glass.smart': {
-    en: 'Smart', it: 'Smart', es: 'Smart', fr: 'Smart', de: 'Smart',
-    pt: 'Smart', ja: 'Smart', zh: 'Smart', ko: 'Smart', ru: 'Smart',
+    en: 'Light', it: 'Light', es: 'Light', fr: 'Light', de: 'Light',
+    pt: 'Light', ja: 'Light', zh: 'Light', ko: 'Light', ru: 'Light',
   },
   'glass.full': {
     en: 'Full', it: 'Full', es: 'Full', fr: 'Full', de: 'Full',
     pt: 'Full', ja: 'Full', zh: 'Full', ko: 'Full', ru: 'Full',
   },
 
-  // ── Smart View Settings ──
+  // ── Light View Settings ──
   'settings.smartView': {
-    en: 'Smart View', it: 'Vista Smart', es: 'Vista Smart', fr: 'Vue Smart', de: 'Smart-Ansicht',
-    pt: 'Vista Smart', ja: 'スマートビュー', zh: '智能视图', ko: '스마트 뷰', ru: 'Smart-вид',
+    en: 'Light View', it: 'Vista Light', es: 'Vista Light', fr: 'Vue Light', de: 'Light-Ansicht',
+    pt: 'Vista Light', ja: 'ライトビュー', zh: '轻量视图', ko: '라이트 뷰', ru: 'Light-вид',
   },
   'settings.smartViewDesc': {
     en: 'Customize which info fields are shown during workout steps on the glasses', it: 'Personalizza quali info mostrare durante gli step sugli occhiali', es: 'Personaliza qué info se muestra durante los pasos en las gafas', fr: 'Personnalise les infos affichées pendant les exercices sur les lunettes', de: 'Passe an, welche Infos bei den Schritten auf der Brille angezeigt werden',
     pt: 'Personalize quais informações são mostradas durante os passos nos óculos', ja: 'グラスでのステップ中に表示する情報をカスタマイズ', zh: '自定义眼镜上锻炼步骤显示的信息', ko: '안경에서 운동 단계 중 표시할 정보 맞춤 설정', ru: 'Настройте, какие поля показывать на очках во время упражнений',
   },
   'settings.smartViewEnabled': {
-    en: 'Enable Smart View', it: 'Attiva Vista Smart', es: 'Activar Vista Smart', fr: 'Activer Vue Smart', de: 'Smart-Ansicht aktivieren',
-    pt: 'Ativar Vista Smart', ja: 'スマートビューを有効化', zh: '启用智能视图', ko: '스마트 뷰 활성화', ru: 'Включить Smart-вид',
+    en: 'Enable Light View', it: 'Attiva Vista Light', es: 'Activar Vista Light', fr: 'Activer Vue Light', de: 'Light-Ansicht aktivieren',
+    pt: 'Ativar Vista Light', ja: 'ライトビューを有効化', zh: '启用轻量视图', ko: '라이트 뷰 활성화', ru: 'Включить Light-вид',
   },
   'settings.defaultView': {
     en: 'Default View', it: 'Vista Predefinita', es: 'Vista por Defecto', fr: 'Vue par Défaut', de: 'Standardansicht',
@@ -682,8 +682,8 @@ const translations: Record<string, Record<AppLanguage, string>> = {
     pt: 'Completa', ja: '全情報', zh: '完整', ko: '전체', ru: 'Полный',
   },
   'settings.viewSmart': {
-    en: 'Smart', it: 'Smart', es: 'Smart', fr: 'Smart', de: 'Smart',
-    pt: 'Smart', ja: 'スマート', zh: '精简', ko: '스마트', ru: 'Компакт',
+    en: 'Light', it: 'Light', es: 'Light', fr: 'Light', de: 'Light',
+    pt: 'Light', ja: 'ライト', zh: '轻量', ko: '라이트', ru: 'Light',
   },
   'settings.smartViewFields': {
     en: 'Visible Fields', it: 'Campi Visibili', es: 'Campos Visibles', fr: 'Champs Visibles', de: 'Sichtbare Felder',
