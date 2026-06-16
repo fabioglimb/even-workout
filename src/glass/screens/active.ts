@@ -6,7 +6,7 @@ import { buildActionBar } from 'even-toolkit/action-bar';
 import { buildStaticActionBar } from 'even-toolkit/action-bar';
 import { truncate } from 'even-toolkit/text-utils';
 import { moveHighlight, clampIndex } from 'even-toolkit/glass-nav';
-import type { ActiveWorkoutState, Workout } from '../../types/workout';
+import type { ActiveWorkoutState, Workout, SmartViewConfig } from '../../types/workout';
 import type { AppLanguage } from '../../utils/i18n';
 import { t } from '../../utils/i18n';
 import { getSetWeight } from '../../utils/weight';
@@ -28,17 +28,16 @@ function getExitButtons(lang: AppLanguage): string[] {
   return [t('glass.cancel', lang), t('glass.exitConfirm', lang)];
 }
 
-function getActiveButtons(state: ActiveWorkoutState, workout: Workout, lang: AppLanguage): string[] {
+function getActiveButtons(state: ActiveWorkoutState, workout: Workout, lang: AppLanguage, smartView?: SmartViewConfig, viewMode?: 'full' | 'smart'): string[] {
   if (state.phase === 'rest') return [t('glass.skipRest', lang)];
   const exercise = workout.exercises[state.exerciseIndex];
-  // A "Note" button is shown when the current exercise has notes.
   const noteBtn = exercise?.notes ? [t('glass.note', lang)] : [];
-  // Timed exercises get a Start/Stop button before Done and Skip.
+  const viewBtn = smartView?.enabled ? [viewMode === 'smart' ? t('glass.full', lang) : t('glass.smart', lang)] : [];
   if (exercise?.durationSeconds != null) {
     const toggle = state.exerciseRunning ? t('glass.pause', lang) : t('glass.start', lang);
-    return [toggle, t('glass.done', lang), t('glass.skip', lang), ...noteBtn];
+    return [toggle, t('glass.done', lang), t('glass.skip', lang), ...noteBtn, ...viewBtn];
   }
-  return [t('glass.done', lang), t('glass.skip', lang), ...noteBtn];
+  return [t('glass.done', lang), t('glass.skip', lang), ...noteBtn, ...viewBtn];
 }
 
 function completeDisplay(state: ActiveWorkoutState, lang: AppLanguage) {
@@ -65,28 +64,35 @@ function withSpacerRows(lines: string[]): string[] {
   return lines.flatMap((line, index) => index < lines.length - 1 ? [line, ''] : [line]);
 }
 
-function buildExerciseLeftLines(state: ActiveWorkoutState, workout: Workout, lang: AppLanguage): string[] {
+function buildExerciseLeftLines(state: ActiveWorkoutState, workout: Workout, lang: AppLanguage, smartView?: SmartViewConfig, viewMode?: 'full' | 'smart'): string[] {
   const exercise = workout.exercises[state.exerciseIndex];
   if (!exercise) return [];
 
   const isTimed = exercise.durationSeconds != null;
-  // Per-set weight for the current set (falls back to the base weight).
   const weight = getSetWeight(exercise, state.currentSet - 1);
-  return withSpacerRows([
-    `• ${t('glass.set', lang)} ${state.currentSet}/${exercise.sets}`,
-    // For timed exercises the live timer is shown in the right pane instead of "30s".
-    isTimed ? '' : `• ${formatExercisePrescription(exercise, lang)}`,
-    weight !== null ? `• ${weight}kg` : '',
-    `• REST ${exercise.restSeconds}s`,
-  ].filter(Boolean));
+  const isSmart = smartView?.enabled && viewMode === 'smart';
+  const fields = smartView?.fields ?? [];
+
+  const lines: string[] = [];
+  if (!isSmart || fields.includes('sets')) lines.push(`• ${t('glass.set', lang)} ${state.currentSet}/${exercise.sets}`);
+  if (!isSmart || fields.includes('reps')) {
+    if (!isTimed) lines.push(`• ${formatExercisePrescription(exercise, lang)}`);
+  }
+  if ((!isSmart || fields.includes('weight')) && weight !== null) lines.push(`• ${weight}kg`);
+  if (!isSmart || fields.includes('rest')) lines.push(`• REST ${exercise.restSeconds}s`);
+
+  return withSpacerRows(lines.filter(Boolean));
 }
 
-function buildExerciseRightLines(state: ActiveWorkoutState, workout: Workout, lang: AppLanguage): string[] {
+function buildExerciseRightLines(state: ActiveWorkoutState, workout: Workout, lang: AppLanguage, smartView?: SmartViewConfig, viewMode?: 'full' | 'smart'): string[] {
   const exercise = workout.exercises[state.exerciseIndex];
   const nextExercise = workout.exercises[state.exerciseIndex + 1] ?? null;
   if (!exercise) return [];
 
-  // Timed exercise → show the live countdown timer (reusing the rest-timer renderer).
+  const isSmart = smartView?.enabled && viewMode === 'smart';
+  const fields = smartView?.fields ?? [];
+
+  // Timed exercises: timer always shows (it's the core interaction).
   if (exercise.durationSeconds != null) {
     const sideLabel = state.exerciseSide ? (state.exerciseSide === 'left' ? '  L' : '  R') : '';
     return [
@@ -100,14 +106,15 @@ function buildExerciseRightLines(state: ActiveWorkoutState, workout: Workout, la
     ];
   }
 
-  return withSpacerRows([
-    `◆ ${t('glass.progress', lang)} ${state.completedSets}/${state.totalSets}`,
-    `◆ EX ${state.exerciseIndex + 1}/${workout.exercises.length}`,
-    nextExercise ? `▶ NEXT ${nextExercise.name}` : `▶ LAST ${exercise.name}`,
-  ]);
+  const lines: string[] = [];
+  if (!isSmart || fields.includes('progress')) lines.push(`◆ ${t('glass.progress', lang)} ${state.completedSets}/${state.totalSets}`);
+  if (!isSmart || fields.includes('exerciseNum')) lines.push(`◆ EX ${state.exerciseIndex + 1}/${workout.exercises.length}`);
+  if (!isSmart || fields.includes('nextExercise')) lines.push(nextExercise ? `▶ NEXT ${nextExercise.name}` : `▶ LAST ${exercise.name}`);
+
+  return withSpacerRows(lines);
 }
 
-function buildRestLeftLines(state: ActiveWorkoutState, workout: Workout, lang: AppLanguage): string[] {
+function buildRestLeftLines(state: ActiveWorkoutState, workout: Workout, lang: AppLanguage, smartView?: SmartViewConfig, viewMode?: 'full' | 'smart'): string[] {
   const exercise = workout.exercises[state.exerciseIndex];
   if (!exercise) return [];
   const isLastSet = state.currentSet >= exercise.sets;
@@ -115,19 +122,27 @@ function buildRestLeftLines(state: ActiveWorkoutState, workout: Workout, lang: A
   const nextExercise = isLastSet ? workout.exercises[state.exerciseIndex + 1] ?? null : exercise;
   const nextTotal = nextExercise?.sets ?? exercise.sets;
 
-  return withSpacerRows([
-    `• ${t('glass.progress', lang)} ${state.completedSets}/${state.totalSets}`,
-    `• ${t('glass.set', lang)} ${nextSet}/${nextTotal}`,
-    `• ${exercise.restSeconds}s`,
-  ]);
+  const isSmart = smartView?.enabled && viewMode === 'smart';
+  const fields = smartView?.fields ?? [];
+
+  const lines: string[] = [];
+  if (!isSmart || fields.includes('progress')) lines.push(`• ${t('glass.progress', lang)} ${state.completedSets}/${state.totalSets}`);
+  if (!isSmart || fields.includes('sets')) lines.push(`• ${t('glass.set', lang)} ${nextSet}/${nextTotal}`);
+  if (!isSmart || fields.includes('rest')) lines.push(`• ${exercise.restSeconds}s`);
+
+  return withSpacerRows(lines);
 }
 
-function buildRestRightLines(state: ActiveWorkoutState, workout: Workout, lang: AppLanguage): string[] {
+function buildRestRightLines(state: ActiveWorkoutState, workout: Workout, lang: AppLanguage, smartView?: SmartViewConfig, viewMode?: 'full' | 'smart'): string[] {
   const exercise = workout.exercises[state.exerciseIndex];
   const isLastSet = (exercise?.sets ?? 0) > 0 && state.currentSet >= (exercise?.sets ?? 0);
   const nextExercise = isLastSet ? workout.exercises[state.exerciseIndex + 1] ?? null : exercise;
   const restTotal = exercise?.restSeconds ?? 30;
-  return [
+
+  const isSmart = smartView?.enabled && viewMode === 'smart';
+  const fields = smartView?.fields ?? [];
+
+  const lines: string[] = [
     `◆ ${t('glass.rest', lang)}`,
     '',
     ...renderTimerLines({
@@ -135,9 +150,12 @@ function buildRestRightLines(state: ActiveWorkoutState, workout: Workout, lang: 
       remaining: state.restRemaining,
       total: restTotal,
     }, 14, REST_RIGHT_WIDTH),
-    '',
-    nextExercise ? `▶ NEXT ${nextExercise.name}` : '',
   ];
+  if (!isSmart || fields.includes('nextExercise')) {
+    lines.push('');
+    lines.push(nextExercise ? `▶ NEXT ${nextExercise.name}` : '');
+  }
+  return lines;
 }
 
 export function buildActiveSplit(snapshot: WorkoutSnapshot, nav: { highlightedIndex: number }): SplitData {
@@ -185,9 +203,12 @@ export function buildActiveSplit(snapshot: WorkoutSnapshot, nav: { highlightedIn
   }
 
   const exercise = workout.exercises[state.exerciseIndex];
-  const buttons = getActiveButtons(state, workout, lang);
+  const sv = snapshot.smartView;
+  const vm = snapshot.glassViewMode;
+  const buttons = getActiveButtons(state, workout, lang, sv, vm);
   const selectedButtonIndex = clampIndex(nav.highlightedIndex, buttons.length);
-  const actionBar = buildActionBar(buttons, selectedButtonIndex, null, snapshot.flashPhase);
+  const activeLabel = sv?.enabled ? (vm === 'smart' ? '◇' : null) : null;
+  const actionBar = buildActionBar(buttons, selectedButtonIndex, activeLabel, snapshot.flashPhase);
   const header = buildSplitHeader(exercise?.name ?? '', actionBar, false);
 
   // Notes view: show the exercise's note instead of the exercise panes.
@@ -206,8 +227,8 @@ export function buildActiveSplit(snapshot: WorkoutSnapshot, nav: { highlightedIn
     return {
       header,
       panes: [
-        buildPaneText(buildRestLeftLines(state, workout, lang), REST_LEFT_WIDTH, 0),
-        buildPaneText(buildRestRightLines(state, workout, lang), REST_RIGHT_WIDTH, 0),
+        buildPaneText(buildRestLeftLines(state, workout, lang, sv, vm), REST_LEFT_WIDTH, 0),
+        buildPaneText(buildRestRightLines(state, workout, lang, sv, vm), REST_RIGHT_WIDTH, 0),
       ],
       layout: REST_LAYOUT,
     };
@@ -216,8 +237,8 @@ export function buildActiveSplit(snapshot: WorkoutSnapshot, nav: { highlightedIn
   return {
     header,
     panes: [
-      buildPaneText(buildExerciseLeftLines(state, workout, lang), ACTIVE_LEFT_WIDTH, 0),
-      buildPaneText(buildExerciseRightLines(state, workout, lang), ACTIVE_RIGHT_WIDTH, 0),
+      buildPaneText(buildExerciseLeftLines(state, workout, lang, sv, vm), ACTIVE_LEFT_WIDTH, 0),
+      buildPaneText(buildExerciseRightLines(state, workout, lang, sv, vm), ACTIVE_RIGHT_WIDTH, 0),
     ],
     layout: ACTIVE_LAYOUT,
   };
@@ -246,9 +267,12 @@ export const activeScreen: GlassScreen<WorkoutSnapshot, WorkoutActions> = {
     }
 
     const exercise = workout.exercises[state.exerciseIndex];
-    const buttons = getActiveButtons(state, workout, lang);
+    const sv = snapshot.smartView;
+    const vm = snapshot.glassViewMode;
+    const buttons = getActiveButtons(state, workout, lang, sv, vm);
     const btnIdx = clampIndex(nav.highlightedIndex, buttons.length);
-    const actionBar = buildActionBar(buttons, btnIdx, null, snapshot.flashPhase);
+    const activeLabel = sv?.enabled ? (vm === 'smart' ? '◇' : null) : null;
+    const actionBar = buildActionBar(buttons, btnIdx, activeLabel, snapshot.flashPhase);
     const lines = [...glassHeader(exercise?.name ?? '', actionBar)];
 
     if (snapshot.notesVisible && exercise?.notes) {
@@ -332,7 +356,9 @@ export const activeScreen: GlassScreen<WorkoutSnapshot, WorkoutActions> = {
       return nav;
     }
 
-    const buttons = getActiveButtons(state, workout, lang);
+    const sv = snapshot.smartView;
+    const vm = snapshot.glassViewMode;
+    const buttons = getActiveButtons(state, workout, lang, sv, vm);
 
     if (action.type === 'HIGHLIGHT_MOVE') {
       const btnIdx = clampIndex(nav.highlightedIndex, buttons.length);
@@ -363,6 +389,10 @@ export const activeScreen: GlassScreen<WorkoutSnapshot, WorkoutActions> = {
       }
       if (selected === t('glass.note', lang)) {
         ctx.toggleNotes();
+        return nav;
+      }
+      if (selected === t('glass.smart', lang) || selected === t('glass.full', lang)) {
+        ctx.toggleViewMode();
         return nav;
       }
       return nav;

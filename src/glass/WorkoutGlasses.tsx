@@ -36,6 +36,9 @@ export function WorkoutGlasses() {
     toggleNotes,
     language,
     favoriteIds,
+    smartViewConfig,
+    glassViewMode,
+    toggleViewMode,
   } = useWorkoutContext();
   const navigate = useNavigate();
   const location = useLocation();
@@ -60,6 +63,8 @@ export function WorkoutGlasses() {
     favoriteIds,
     pendingExit,
     notesVisible,
+    smartView: smartViewConfig,
+    glassViewMode,
   };
   snapshotRef.current = snapshot;
 
@@ -77,8 +82,9 @@ export function WorkoutGlasses() {
     requestExit,
     cancelExit,
     toggleNotes,
+    toggleViewMode,
   });
-  ctxRef.current = { navigate, startWorkout, completeSet, skipRest, finishWorkout, startExerciseTimer, pauseExerciseTimer, requestExit, cancelExit, toggleNotes };
+  ctxRef.current = { navigate, startWorkout, completeSet, skipRest, finishWorkout, startExerciseTimer, pauseExerciseTimer, requestExit, cancelExit, toggleNotes, toggleViewMode };
 
   // Wrap the router's onGlassAction to inject context
   const handleGlassAction = useCallback(

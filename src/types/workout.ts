@@ -50,6 +50,22 @@ export interface WorkoutScheduleEntry {
   scheduledTime?: string;
 }
 
+export type SmartViewField = 'sets' | 'reps' | 'weight' | 'rest' | 'progress' | 'exerciseNum' | 'nextExercise';
+
+export interface SmartViewConfig {
+  enabled: boolean;
+  defaultMode: 'full' | 'smart';
+  fields: SmartViewField[];
+}
+
+export const DEFAULT_SMART_VIEW: SmartViewConfig = {
+  enabled: false,
+  defaultMode: 'full',
+  fields: ['sets', 'reps', 'weight'],
+};
+
+export const ALL_SMART_VIEW_FIELDS: SmartViewField[] = ['sets', 'reps', 'weight', 'rest', 'progress', 'exerciseNum', 'nextExercise'];
+
 export type WorkoutPhase = "exercise" | "rest";
 
 export interface ActiveWorkoutState {

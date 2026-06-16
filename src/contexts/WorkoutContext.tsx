@@ -7,7 +7,8 @@ import {
   useRef,
   type ReactNode,
 } from "react";
-import type { Workout, ActiveWorkoutState, Exercise, SessionRecord, WorkoutScheduleEntry } from "../types/workout";
+import type { Workout, ActiveWorkoutState, Exercise, SessionRecord, WorkoutScheduleEntry, SmartViewConfig } from "../types/workout";
+import { DEFAULT_SMART_VIEW } from "../types/workout";
 import type { AppLanguage } from "../utils/i18n";
 import { presetWorkouts, getWorkoutById, getTotalSets } from "../data/workouts";
 import {
@@ -60,6 +61,10 @@ interface WorkoutContextValue {
   setLanguage: (lang: AppLanguage) => void;
   favoriteIds: string[];
   toggleFavorite: (id: string) => void;
+  smartViewConfig: SmartViewConfig;
+  setSmartViewConfig: (config: SmartViewConfig) => void;
+  glassViewMode: 'full' | 'smart';
+  toggleViewMode: () => void;
 }
 
 /** Initial per-exercise timer state when entering an exercise. */
@@ -88,19 +93,25 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
   const [pendingExit, setPendingExit] = useState(false);
   // Glasses-side: show the current exercise's note instead of the exercise view.
   const [notesVisible, setNotesVisible] = useState(false);
+  // Smart View: customizable field selection for the active glass screen.
+  const [smartViewConfig, setSmartViewConfigState] = useState<SmartViewConfig>(DEFAULT_SMART_VIEW);
+  const [glassViewMode, setGlassViewMode] = useState<'full' | 'smart'>(DEFAULT_SMART_VIEW.defaultMode);
 
   // Keep a ref to the latest customWorkouts so sync callbacks (state updaters) can read it
   const workoutsRef = useRef(customWorkouts);
   workoutsRef.current = customWorkouts;
+  const smartViewRef = useRef(smartViewConfig);
+  smartViewRef.current = smartViewConfig;
 
   useEffect(() => {
     async function init() {
-      const [saved, history, lang, schedule, favs] = await Promise.all([
+      const [saved, history, lang, schedule, favs, sv] = await Promise.all([
         loadCustomWorkouts(),
         loadSessionHistory(),
         loadLanguage(),
         loadWorkoutSchedule(),
         storageGet<string[]>('workout-favorites', []),
+        storageGet<SmartViewConfig>('workout-smart-view', DEFAULT_SMART_VIEW),
       ]);
 
       // Only adopt stored workouts when the read actually returned data.
@@ -118,6 +129,10 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
       setScheduleEntries(schedule);
       setLanguageState(lang);
       if (favs) setFavoriteIds(favs);
+      if (sv) {
+        setSmartViewConfigState(sv);
+        setGlassViewMode(sv.defaultMode);
+      }
       setLoaded(true);
     }
     init();
@@ -126,6 +141,15 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
   const setLanguage = useCallback((lang: AppLanguage) => {
     setLanguageState(lang);
     saveLanguage(lang);
+  }, []);
+
+  const setSmartViewConfig = useCallback((config: SmartViewConfig) => {
+    setSmartViewConfigState(config);
+    storageSet('workout-smart-view', config);
+  }, []);
+
+  const toggleViewMode = useCallback(() => {
+    setGlassViewMode((prev) => (prev === 'full' ? 'smart' : 'full'));
   }, []);
 
   const toggleFavorite = useCallback((id: string) => {
@@ -147,6 +171,7 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
     if (!workout) return;
     setPendingExit(false);
     setNotesVisible(false);
+    setGlassViewMode(smartViewRef.current.defaultMode);
     const firstExercise: Exercise | undefined = workout.exercises[0];
     setActiveState({
       workoutId,
@@ -486,6 +511,10 @@ export function WorkoutProvider({ children }: { children: ReactNode }) {
         setLanguage,
         favoriteIds,
         toggleFavorite,
+        smartViewConfig,
+        setSmartViewConfig,
+        glassViewMode,
+        toggleViewMode,
       }}
     >
       {children}

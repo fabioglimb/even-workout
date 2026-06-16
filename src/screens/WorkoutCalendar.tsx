@@ -178,30 +178,6 @@ export default function WorkoutCalendar() {
         </Card>
       </div>
 
-      <Card className="overflow-hidden">
-        <Calendar
-          className="px-1"
-          events={calendarEvents}
-          view={view}
-          onViewChange={setView}
-          selectedDate={selectedDate}
-          onDateChange={setSelectedDate}
-          onEventClick={(event) => {
-            const entry = scheduleEntries.find((item) => item.id === event.id);
-            if (!entry) return;
-            setSelectedDate(fromDateKey(entry.scheduledFor));
-            setSelectedWorkoutId(entry.workoutId);
-            setView('day');
-          }}
-          onEventMove={({ event, start }: CalendarEventMove) => {
-            moveScheduledWorkout(event.id, toDateKey(start), toTimeKey({
-              hour: start.getHours(),
-              minute: start.getMinutes(),
-            }));
-          }}
-        />
-      </Card>
-
       <Card className="flex flex-col gap-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -270,6 +246,30 @@ export default function WorkoutCalendar() {
             </div>
           </>
         )}
+      </Card>
+
+      <Card className="overflow-hidden">
+        <Calendar
+          className="px-1"
+          events={calendarEvents}
+          view={view}
+          onViewChange={setView}
+          selectedDate={selectedDate}
+          onDateChange={setSelectedDate}
+          onEventClick={(event) => {
+            const entry = scheduleEntries.find((item) => item.id === event.id);
+            if (!entry) return;
+            setSelectedDate(fromDateKey(entry.scheduledFor));
+            setSelectedWorkoutId(entry.workoutId);
+            setView('day');
+          }}
+          onEventMove={({ event, start }: CalendarEventMove) => {
+            moveScheduledWorkout(event.id, toDateKey(start), toTimeKey({
+              hour: start.getHours(),
+              minute: start.getMinutes(),
+            }));
+          }}
+        />
       </Card>
 
       <TimePicker

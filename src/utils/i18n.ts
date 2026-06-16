@@ -647,6 +647,76 @@ const translations: Record<string, Record<AppLanguage, string>> = {
     fr: 'Aucune séance', de: 'Keine Sitzungen', pt: 'Nenhuma sessão',
     ja: 'セッションなし', zh: '暂无记录', ko: '세션 없음', ru: 'Нет сессий',
   },
+  'glass.smart': {
+    en: 'Smart', it: 'Smart', es: 'Smart', fr: 'Smart', de: 'Smart',
+    pt: 'Smart', ja: 'Smart', zh: 'Smart', ko: 'Smart', ru: 'Smart',
+  },
+  'glass.full': {
+    en: 'Full', it: 'Full', es: 'Full', fr: 'Full', de: 'Full',
+    pt: 'Full', ja: 'Full', zh: 'Full', ko: 'Full', ru: 'Full',
+  },
+
+  // ── Smart View Settings ──
+  'settings.smartView': {
+    en: 'Smart View', it: 'Vista Smart', es: 'Vista Smart', fr: 'Vue Smart', de: 'Smart-Ansicht',
+    pt: 'Vista Smart', ja: 'スマートビュー', zh: '智能视图', ko: '스마트 뷰', ru: 'Smart-вид',
+  },
+  'settings.smartViewDesc': {
+    en: 'Customize which info fields are shown during workout steps on the glasses', it: 'Personalizza quali info mostrare durante gli step sugli occhiali', es: 'Personaliza qué info se muestra durante los pasos en las gafas', fr: 'Personnalise les infos affichées pendant les exercices sur les lunettes', de: 'Passe an, welche Infos bei den Schritten auf der Brille angezeigt werden',
+    pt: 'Personalize quais informações são mostradas durante os passos nos óculos', ja: 'グラスでのステップ中に表示する情報をカスタマイズ', zh: '自定义眼镜上锻炼步骤显示的信息', ko: '안경에서 운동 단계 중 표시할 정보 맞춤 설정', ru: 'Настройте, какие поля показывать на очках во время упражнений',
+  },
+  'settings.smartViewEnabled': {
+    en: 'Enable Smart View', it: 'Attiva Vista Smart', es: 'Activar Vista Smart', fr: 'Activer Vue Smart', de: 'Smart-Ansicht aktivieren',
+    pt: 'Ativar Vista Smart', ja: 'スマートビューを有効化', zh: '启用智能视图', ko: '스마트 뷰 활성화', ru: 'Включить Smart-вид',
+  },
+  'settings.defaultView': {
+    en: 'Default View', it: 'Vista Predefinita', es: 'Vista por Defecto', fr: 'Vue par Défaut', de: 'Standardansicht',
+    pt: 'Vista Padrão', ja: 'デフォルト表示', zh: '默认视图', ko: '기본 뷰', ru: 'Вид по умолчанию',
+  },
+  'settings.defaultViewDesc': {
+    en: 'View mode when starting a workout', it: 'Modalità visualizzazione all\'inizio dell\'allenamento', es: 'Modo de vista al iniciar un entrenamiento', fr: 'Mode d\'affichage au début de l\'entraînement', de: 'Anzeigemodus beim Start des Trainings',
+    pt: 'Modo de visualização ao iniciar o treino', ja: 'ワークアウト開始時の表示モード', zh: '开始锻炼时的视图模式', ko: '운동 시작 시 뷰 모드', ru: 'Режим отображения при старте тренировки',
+  },
+  'settings.viewFull': {
+    en: 'Full', it: 'Completa', es: 'Completa', fr: 'Complète', de: 'Vollständig',
+    pt: 'Completa', ja: '全情報', zh: '完整', ko: '전체', ru: 'Полный',
+  },
+  'settings.viewSmart': {
+    en: 'Smart', it: 'Smart', es: 'Smart', fr: 'Smart', de: 'Smart',
+    pt: 'Smart', ja: 'スマート', zh: '精简', ko: '스마트', ru: 'Компакт',
+  },
+  'settings.smartViewFields': {
+    en: 'Visible Fields', it: 'Campi Visibili', es: 'Campos Visibles', fr: 'Champs Visibles', de: 'Sichtbare Felder',
+    pt: 'Campos Visíveis', ja: '表示フィールド', zh: '可见字段', ko: '표시 항목', ru: 'Видимые поля',
+  },
+  'settings.field.sets': {
+    en: 'Set Counter', it: 'Contatore Serie', es: 'Contador de Series', fr: 'Compteur Séries', de: 'Satz-Zähler',
+    pt: 'Contador de Séries', ja: 'セットカウンター', zh: '组数计数', ko: '세트 카운터', ru: 'Счётчик подходов',
+  },
+  'settings.field.reps': {
+    en: 'Reps / Duration', it: 'Ripetizioni / Durata', es: 'Reps / Duración', fr: 'Reps / Durée', de: 'Wdh / Dauer',
+    pt: 'Reps / Duração', ja: '回数 / 時間', zh: '次数 / 时长', ko: '횟수 / 시간', ru: 'Повторы / Длит.',
+  },
+  'settings.field.weight': {
+    en: 'Weight', it: 'Peso', es: 'Peso', fr: 'Poids', de: 'Gewicht',
+    pt: 'Peso', ja: '重量', zh: '重量', ko: '무게', ru: 'Вес',
+  },
+  'settings.field.rest': {
+    en: 'Rest Time', it: 'Tempo Pausa', es: 'Tiempo Descanso', fr: 'Temps Repos', de: 'Pausenzeit',
+    pt: 'Tempo Descanso', ja: '休憩時間', zh: '休息时间', ko: '휴식 시간', ru: 'Время отдыха',
+  },
+  'settings.field.progress': {
+    en: 'Overall Progress', it: 'Progresso Totale', es: 'Progreso Total', fr: 'Progrès Global', de: 'Gesamtfortschritt',
+    pt: 'Progresso Total', ja: '全体の進捗', zh: '总进度', ko: '전체 진행', ru: 'Общий прогресс',
+  },
+  'settings.field.exerciseNum': {
+    en: 'Exercise Number', it: 'Numero Esercizio', es: 'Número Ejercicio', fr: 'Numéro Exercice', de: 'Übungsnummer',
+    pt: 'Número Exercício', ja: 'エクササイズ番号', zh: '练习编号', ko: '운동 번호', ru: 'Номер упражнения',
+  },
+  'settings.field.nextExercise': {
+    en: 'Next Exercise', it: 'Prossimo Esercizio', es: 'Próximo Ejercicio', fr: 'Exercice Suivant', de: 'Nächste Übung',
+    pt: 'Próximo Exercício', ja: '次のエクササイズ', zh: '下一个练习', ko: '다음 운동', ru: 'Следующее упражнение',
+  },
 };
 
 export function t(key: string, lang: AppLanguage): string {

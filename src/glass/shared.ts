@@ -1,4 +1,4 @@
-import type { ActiveWorkoutState, Workout, SessionRecord } from '../types/workout';
+import type { ActiveWorkoutState, Workout, SessionRecord, SmartViewConfig } from '../types/workout';
 import type { AppLanguage } from '../utils/i18n';
 import { truncate } from 'even-toolkit/text-utils';
 import { glassHeader, renderTextPageLines } from 'even-toolkit/types';
@@ -13,6 +13,8 @@ export interface WorkoutSnapshot {
   favoriteIds: string[];
   pendingExit: boolean;
   notesVisible: boolean;
+  smartView: SmartViewConfig;
+  glassViewMode: 'full' | 'smart';
 }
 
 export interface WorkoutActions {
@@ -26,6 +28,7 @@ export interface WorkoutActions {
   requestExit: () => void;
   cancelExit: () => void;
   toggleNotes: () => void;
+  toggleViewMode: () => void;
 }
 
 export function formatDuration(ms: number): string {
